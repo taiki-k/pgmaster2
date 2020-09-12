@@ -1,0 +1,95 @@
+{#
+  Copyright (C) 2020 Kondo Taiki
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>pgmaster2 {{ project }} - {{ branch }} - {{ commit.sid }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/default.min.css" integrity="sha512-kZqGbhf9JTB4bVJ0G8HCkqmaPcRgo88F0dneK30yku5Y/dep7CZfCnNml2Je/sY4lBoqoksXz4PtVXS4GHSUzQ==" crossorigin="anonymous" />
+<style type="text/css">
+<!--
+* {
+  padding : 0px;
+  margin  : 0px;
+}
+-->
+</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js" integrity="sha512-7t8APmYpzEsZP7CYoA7RfMPV9Bb+PJHa9x2WiUnDXZx3XHveuyWUtvNOexhkierl5flZ3tr92dP1mMS+SGlD+A==" crossorigin="anonymous"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<!--
+<p>Investigate : {{ project }} &gt; {{ branch }} &gt; {{ commit.id }} ({{ commit.sid }})</p>
+-->
+<div style="margin : 2%;">
+  <h1>Investigate : {{ commit.id }}</h1>
+<!--
+  <p>Repository Browser Link</p>
+  <table>
+    <tr>
+      <td>abc</td>
+      <td><a>Full</a></td>
+      <td><a>Diff</a></td>
+    <tr>
+  </table>
+-->
+  </div>
+<div style="margin : 2%;">
+  <div style="position : absolute; width : 47%; float : left;" id="original">
+    <div style="height : 30px;"><!-- No output here --></div>
+    <h3 style="height:60px;">{{ commit.summary }}</h3>
+    <div style="height : 70px;">
+      <p>Author: {{ commit.author }}<br>
+      Date: {{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</p>
+    </div>
+    <div style="height : 500px; overflow : auto;">
+      <p>{{ commit.message }}
+      </p>
+    </div>
+    <div style="height : 500px; overflow : auto;">
+    {% for diff in commit.diffs %}
+    <pre><code>{{ diff }}</code></pre>
+    {% endfor %}
+    </div>
+  </div>
+  <div style="position : absolute; width : 47%; margin : 0 47%;" id="analysis">
+    <form method="POST" action="{{ commit.invest_url }}" enctype="multipart/form-data" accept-charset="UTF-8">
+    <div style="height : 30px;"><p>Last updated: {{ commit.updated }}</p></div>
+    <div style="height : 60px;"><input size="80" type="text" name="snote" value="{{ commit.snote }}" required></div>
+    <div style="height : 70px;"><!-- No input required --></div>
+    <div style="height : 500px;">
+      <textarea rows="25" cols="80" name="note" required>{{ commit.note }}</textarea>
+    </div>
+    <div style="height : 500px;">
+      <textarea rows="25" cols="80" name="analysis">{{ commit.analysis }}</textarea>
+    </div>
+    <div style="height : 50px;">
+      <div style="margin : 0 10%; width : 10%; float : left;">
+        <input type="submit" name="Submit">
+      </div>
+      <div style="margin : 0 80%; width : 10%;">
+        <input type="reset" name="Clear">
+      </div>
+    </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

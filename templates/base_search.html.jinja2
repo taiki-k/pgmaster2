@@ -1,0 +1,54 @@
+{#
+  Copyright (C) 2020 Kondo Taiki
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}{% extends "base.html.jinja2" %}
+{% block message %}Select a Commit ID to investigate.{% endblock %}
+{% block selections %}
+<nav style="display: inline-block;"><ul style="list-style-type: none;padding-left: 0;">
+  <li style="display: inline-block;">{% if urls.page > 1 %}<a href="{{ urls.prev }}">{% endif %}PREV{% if urls.page > 1 %}</a>{% endif %}</li>
+  <li style="display: inline-block;">{% if commits|length > 0 %}<a href="{{ urls.next }}">{% endif %}NEXT{% if commits|length > 0 %}</a>{% endif %}</li>
+</ul></nav>
+<table border="1" width="100%">
+  <tbody>
+    <tr>
+{% block table_title_head %}{% endblock %}
+      <th>Commit ID</th>
+      <th>Commit Date</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Updated</th>
+{% block table_title_tail %}{% endblock %}
+    </tr>
+{% for commit in commits %}
+    <tr>
+{% block table_data_head %}{% endblock %}
+      <td style="font-family:monospace;"><a title="{{ commit.id }}" href="{{ commit.url }}">{{ commit.sid }}</a></td>
+      <td style="font-family:monospace;">{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</td>
+      <td>{{ commit.summary }}</td>
+      <td>{{ commit.author }}</td>
+      <td>{{ commit.updated }}</td>
+{% block table_data_tail %}{% endblock %}
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+<nav style="display: inline-block;"><ul style="list-style-type: none;padding-left: 0;">
+  <li style="display: inline-block;">{% if urls.page > 1 %}<a href="{{ urls.prev }}">{% endif %}PREV{% if urls.page > 1 %}</a>{% endif %}</li>
+  <li style="display: inline-block;">{% if commits|length > 0 %}<a href="{{ urls.next }}">{% endif %}NEXT{% if commits|length > 0 %}</a>{% endif %}</li>
+</ul></nav>
+{% endblock %}

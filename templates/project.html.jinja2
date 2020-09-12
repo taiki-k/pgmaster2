@@ -1,0 +1,26 @@
+{#
+  Copyright (C) 2020 Kondo Taiki
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}{% extends "base_select.html.jinja2" %}
+{% block title %} {{ project }}{% endblock %}
+{% block message %}Select a branch to investigate.{% endblock %}
+{% block list %}
+{% for branch in branches %}
+  <li><a href="{{ branch.url }}">{{ branch.name }}</a></li>
+{% endfor %}
+{% endblock %}
