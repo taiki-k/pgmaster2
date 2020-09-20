@@ -25,6 +25,7 @@ import psycopg2
 import datetime, time
 import fcntl
 import configparser
+import traceback
 import html
 from git import *
 from flask import *
@@ -65,8 +66,7 @@ def root():
   except FileNotFoundError as e:
     abort(404)
   except Exception as e:
-    print(e)
-    abort(500)
+    abort(500, traceback.format_exc())
   finally:
     pg_conn.close(conn)
 
@@ -102,14 +102,31 @@ def project(project):
         }
         branches.append(b_info)
   except Exception as e:
-    print(e)
-    abort(500)
+    abort(500, traceback.format_exc())
   finally:
     pg_conn.close(conn)
 
   return render_template('project.html.jinja2',
     project = project,
     branches = branches)
+
+def validate_page_number(request_args, page = 1, num = 20):
+  """
+  page : page number (must be greater than 0)
+  num  : count of commits in each page (must be greater than 1)
+  """
+
+  if request_args.get('page') is not None:
+    if int(request.args.get('page')) <= 0:
+      raise ValueError
+    page = int(request.args.get('page'))
+
+  if request_args.get('num') is not None:
+    if int(request.args.get('num')) <= 1:
+      raise ValueError
+    num = int(request.args.get('num'))
+  
+  return (page, num)
 
 @app.route('/p/<project>/b/<branch>/')
 def branch(project, branch):
@@ -118,24 +135,15 @@ def branch(project, branch):
     project : project name
     branch  : branch name
   """
-  page = 1  # page number (must be greater than 0)
-  num = 20  # count of commits in each page (must be greater than 1)
+  page = None
+  num = None
 
   try:
-    if request.args.get('page') is not None:
-      if int(request.args.get('page')) <= 0:
-        raise ValueError
-      page = int(request.args.get('page'))
-
-    if request.args.get('num') is not None:
-      if int(request.args.get('num')) <= 1:
-        raise ValueError
-      num = int(request.args.get('num'))
+    (page, num) = validate_page_number(request.args)
   except ValueError as e:
     abort(403)
   except Exception as e:
-    print(e)
-    abort(500)
+    abort(500, traceback.format_exc())
 
   if request.args.get('page') is None or request.args.get('num') is None:
     return redirect(
@@ -144,6 +152,7 @@ def branch(project, branch):
 
   urls = {
     'page' : page,
+    'num'  : num,
     'prev' : url_for(
       'branch', project = project, branch = branch,
       page = page - 1,
@@ -179,7 +188,7 @@ def branch(project, branch):
         _branch b
         LEFT JOIN _investigation i USING (project, branch, commitid)
       WHERE
-        project = %s and branch = %s
+        project = %s AND branch = %s
       ORDER BY
         commitdate DESC, scommitid
       OFFSET %s
@@ -214,12 +223,11 @@ def branch(project, branch):
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
-      abort(500)
+      abort(500, traceback.format_exc())
   except FileNotFoundError as e:
     abort(404)
   except Exception as e:
-    print(e)
-    abort(500)
+    abort(500, traceback.format_exc())
   finally:
     if fd is not None:
       fcntl.flock(fd, fcntl.LOCK_UN)  # UNLOCK!
@@ -265,10 +273,71 @@ def investigate(project, branch, commitid):
     return diffs
   
   def make_html_message(message):
+    import re
+    regex_patterns = [
+      {  # for Web link (http(s)://...)
+        'pattern' : re.compile(r"https?://[\w!?/+\-_~=;.,*&@#$%()'[\]]+"),
+        'replace' : u"<a href=\"%s\" target=\"_blank\">%s</a>"
+      },
+      {  # for CVE (link to MITRE)
+        'pattern' : re.compile(r"CVE-[0-9]{4}-[0-9]+"),
+        'replace' : u"<a href=\"https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s\" target=\"_blank\">%s</a>"
+      }
+    ]
+    ptrn_commitid = re.compile(r"[0-9a-fA-F]{6,40}")
+
+    lines = []
     # Split lines (and chop CR and LF)
-    lines = html.escape(message).splitlines()
+    msg_lines = html.escape(message).splitlines()
+    # Create links
+    for line in msg_lines:
+      for ptrn in regex_patterns:
+        if ptrn['pattern'].search(line):
+          line = re.sub(
+            ptrn['pattern'],
+            lambda x : ptrn['replace'] % (x.group(0), x.group(0)),
+            line
+          )
+          break
+        else:
+          pass
+      else:
+        if ptrn_commitid.search(line):
+          line = re.sub(
+            ptrn_commitid,
+            lambda x : (
+              u"<a href=\"%s\" target=\"_blank\">%s</a>" % (
+                url_for('search_commit', project = project, commitid = x.group(0)),
+                x.group(0)
+              ) if ( # Recheck if this part is a valid commit ID.
+                (    # Check the charactor BEFORE matched part.
+                  (x.start(0) == 0) or (
+                    (x.start(0) > 0) and re.match(r'[ ({<"\'[]', x.string[x.start(0) - 1])
+                  )
+                ) and ( # Check the charactor AFTER matched part.
+                  (x.end(0) == len(x.string)) or (
+                    (x.end(0) < len(x.string)) and re.match(r'[ )}>"\'\].,!:;]', x.string[x.end(0)])
+                  )
+                )
+              ) else x.group(0)
+            ), # end of lambda x
+            line
+          ) # end of re.sub
+
+      lines.append(line)
+
     result = u'<br>\n'.join(lines)
     return result
+  # end of function
+
+  urls = {
+    'backpatch' : url_for(
+      'search_backpatch',
+      project = project,
+      branch = branch,
+      commitid = commitid
+    )
+  }
 
   fd = None
   conn = pg_conn.connect()
@@ -284,19 +353,19 @@ def investigate(project, branch, commitid):
 
     with conn.cursor() as cursor:
       cursor.execute(u"""SELECT
-        b.scommitid,
-        b.commitdate_l,
-        b.timezone_int,
-        i.updatetime,
-        i.snote,
-        i.note,
-        i.analysis
-      FROM
-        _branch b
-        LEFT JOIN _investigation i USING (project, branch, commitid)
-      WHERE
-        project = %s and branch = %s and commitid = %s""",
-      [project, branch, commitid]
+          b.scommitid,
+          b.commitdate_l,
+          b.timezone_int,
+          i.updatetime,
+          i.snote,
+          i.note,
+          i.analysis
+        FROM
+          _branch b
+          LEFT JOIN _investigation i USING (project, branch, commitid)
+        WHERE
+          project = %s AND branch = %s AND commitid = %s""",
+        [project, branch, commitid]
       )
 
       c = cursor.fetchone()
@@ -328,12 +397,11 @@ def investigate(project, branch, commitid):
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
-      abort(500)
+      abort(500, traceback.format_exc())
   except FileNotFoundError as e:
     abort(404)
   except Exception as e:
-    print(e)
-    abort(500)
+    abort(500, traceback.format_exc())
   finally:
     if fd is not None:
       fcntl.flock(fd, fcntl.LOCK_UN)  # UNLOCK!
@@ -345,7 +413,8 @@ def investigate(project, branch, commitid):
     'investigate.html.jinja2',
     project = project,
     branch = branch,
-    commit = c_info
+    commit = c_info,
+    urls = urls
   )
 
 @app.route('/p/<project>/b/<branch>/c/<commitid>/modify', methods = ['POST'])
@@ -365,18 +434,17 @@ def investigate_modify(project, branch, commitid):
       #form_data['snote'] = u'\n'.join(form_data['snote'].striplines())
       pass
 
-    if len(form_data['note']) <=0:
+    if len(form_data['note']) <= 0:
       raise ValueError
     else:
       form_data['note'] = u'\n'.join(form_data['note'].splitlines())
 
-    if len(form_data['analysis']) <=0:
+    if len(form_data['analysis']) <= 0:
       pass
     else:
       form_data['analysis'] = u'\n'.join(form_data['analysis'].splitlines())
   except Exception as e:
-    print(e)
-    abort(403)
+    abort(403, traceback.format_exc())
 
   conn = pg_conn.connect()
 
@@ -416,7 +484,7 @@ def investigate_modify(project, branch, commitid):
       )
     conn.commit()
   except psycopg2.Error as e:
-    abort(500)
+    abort(500, traceback.format_exc())
   finally:
     pg_conn.close(conn)
 
@@ -427,6 +495,237 @@ def investigate_modify(project, branch, commitid):
       branch = branch,
       commitid = commitid
     )
+  )
+
+@app.route('/p/<project>/c/<commitid>/')
+def search_commit(project, commitid):
+  """
+  search_commit() - Generate page for /p/<project>/c/<commitid>/
+    project  : project name
+    commitid : a part of commit id search for
+  """
+  # Check if specified commit id is valid.
+  if len(commitid) < 6 or 40 < len(commitid):
+    # Return "Not found"
+    abort(404)
+
+  page = None
+  num = None
+
+  try:
+    (page, num) = validate_page_number(request.args)
+  except ValueError as e:
+    abort(403)
+  except Exception as e:
+    abort(500, traceback.format_exc())
+
+  urls = None
+
+  commits = []
+  fd = None
+  conn = pg_conn.connect()
+
+  try:
+    # Connect to git repository
+    fd = open(u'git/.lock.' + project, 'r')
+    fcntl.flock(fd, fcntl.LOCK_SH | fcntl.LOCK_NB)  # LOCK!
+    repo = Repo(u'git/' + project + u'.git')
+
+    if not repo.bare:
+      raise FileNotFoundError
+
+    with conn.cursor() as cursor:
+      search_commitid = commitid if len(commitid) == 40 else u'%s%%' % (commitid)
+      query_string = u"""SELECT
+        b.commitid,
+        b.scommitid,
+        b.commitdate_l,
+        b.timezone_int,
+        i.updatetime,
+        b.branch
+      FROM
+        _branch b
+        LEFT JOIN _investigation i USING (project, branch, commitid)
+      WHERE
+        project = %s AND """
+      query_string += u"commitid = %s " if len(commitid) == 40 else u"commitid like %s "
+      query_string += u"""ORDER BY
+        commitdate DESC, scommitid
+      OFFSET %s
+      LIMIT %s"""
+      cursor.execute(query_string,
+        [project, search_commitid, (page - 1) * num, num]
+      )
+
+      rows = cursor.fetchall()
+      if len(rows) <= 0 and page == 1:
+        raise FileNotFoundError
+
+      # If found only 1 commit, redirect to this commit to feel lucky.
+      if len(rows) == 1 and page == 1:
+        return redirect(
+          url_for(
+            'investigate',
+            project = project,
+            branch = rows[0][5],
+            commitid = rows[0][0]
+          )
+        )
+      
+      for c in rows:
+        commit = repo.commit(c[0])
+        c_info = {
+          'id'      : c[0],
+          'sid'     : c[1],
+          'date'    : c[2],
+          'tz'      : c[3],
+          'updated' : c[4],
+          'branch'  : c[5],
+          'summary' : commit.summary,
+          'author'  : commit.author,
+          'url'     : url_for(
+            'investigate',
+            project = project,
+            branch = c[5],
+            commitid = c[0]
+          )
+        }
+        commits.append(c_info)
+
+  except OSError as e:
+    # Can't aquire lock
+    if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
+      abort(503)
+    else:
+      abort(500, traceback.format_exc())
+  except FileNotFoundError as e:
+    abort(404)
+  except Exception as e:
+    abort(500, traceback.format_exc())
+  finally:
+    if fd is not None:
+      fcntl.flock(fd, fcntl.LOCK_UN)  # UNLOCK!
+      fd.close()
+      fd = None
+    pg_conn.close(conn)
+
+  return render_template(
+    'search_commit.html.jinja2',
+    project = project,
+    commitid = commitid,
+    commits = commits,
+    urls = urls
+  )
+
+@app.route('/p/<project>/b/<branch>/c/<commitid>/backpatch')
+def search_backpatch(project, branch, commitid):
+  """
+  search_backpatch() - Generate page for /p/<project>/b/<branch>/c/<commitid>/backpatch
+    project : project name
+    branch  : branch name
+    commitid: commitid
+  """
+  # Check if specified commit id is valid.
+  if len(commitid) != 40:
+    # Commit id is invalid. Return "Not found".
+    abort(404)
+
+  page = None
+  num = None
+
+  try:
+    (page, num) = validate_page_number(request.args)
+  except ValueError as e:
+    abort(403)
+  except Exception as e:
+    abort(500, traceback.format_exc())
+
+  urls = None
+
+  commits = []
+  fd = None
+  conn = pg_conn.connect()
+
+  try:
+    # Connect to git repository
+    fd = open(u'git/.lock.' + project, 'r')
+    fcntl.flock(fd, fcntl.LOCK_SH | fcntl.LOCK_NB)  # LOCK!
+    repo = Repo(u'git/' + project + u'.git')
+
+    if not repo.bare:
+      raise FileNotFoundError
+
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+          a.commitid,
+          a.scommitid,
+          a.commitdate_l,
+          a.timezone_int,
+          i.updatetime,
+          a.branch
+        FROM
+          _branch a
+          JOIN _branch b ON (a.project = b.project)
+          LEFT JOIN _investigation i ON (a.project = i.project AND a.branch = i.branch AND a.commitid = i.commitid)
+        WHERE
+          a.commitdate BETWEEN b.commitdate-'5 minutes'::interval and b.commitdate+'5 minutes'::interval AND
+          b.project = %s AND
+          b.branch = %s AND
+          b.commitid = %s
+        ORDER BY
+          a.commitdate DESC, a.scommitid
+        OFFSET %s
+        LIMIT %s""",
+        [project, branch, commitid, (page - 1) * num, num]
+      )
+
+      rows = cursor.fetchall()
+      if len(rows) <= 0 and page == 1:
+        raise FileNotFoundError
+
+      for c in rows:
+        commit = repo.commit(c[0])
+        c_info = {
+          'id'      : c[0],
+          'sid'     : c[1],
+          'date'    : c[2],
+          'tz'      : c[3],
+          'updated' : c[4],
+          'branch'  : c[5],
+          'summary' : commit.summary,
+          'author'  : commit.author,
+          'url'     : url_for(
+            'investigate',
+            project = project,
+            branch = c[5],
+            commitid = c[0]
+          )
+        }
+        commits.append(c_info)
+
+  except OSError as e:
+    # Can't aquire lock
+    if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
+      abort(503)
+    else:
+      abort(500, traceback.format_exc())
+  except FileNotFoundError as e:
+    abort(404)
+  except Exception as e:
+    abort(500, traceback.format_exc())
+  finally:
+    if fd is not None:
+      fcntl.flock(fd, fcntl.LOCK_UN)  # UNLOCK!
+      fd.close()
+      fd = None
+    pg_conn.close(conn)
+
+  return render_template(
+    'search_backpatch.html.jinja2',
+    project = project,
+    commitid = commitid,
+    commits = commits,
+    urls = urls
   )
 
 if __name__ == "__main__":

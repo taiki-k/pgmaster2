@@ -16,8 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
 
-#}
-<!DOCTYPE html>
+#}<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -28,6 +27,20 @@
 * {
   padding : 0px;
   margin  : 0px;
+}
+.diff_code {
+  margin-top : 10px;
+}
+pre {
+  border-style : solid;
+  border-width : 1px;
+}
+input, textarea {
+  width : 100%;
+  resize: none;
+}
+textarea {
+  height : 99%;
 }
 -->
 </style>
@@ -54,7 +67,7 @@
 <div style="margin : 2%;">
   <div style="position : absolute; width : 47%; float : left;" id="original">
     <div style="height : 30px;"><!-- No output here --></div>
-    <h3 style="height:60px;">{{ commit.summary }}</h3>
+    <h3 style="height : 60px;">{{ commit.summary }}</h3>
     <div style="height : 70px;">
       <p>Author: {{ commit.author }}<br>
       Date: {{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</p>
@@ -63,28 +76,31 @@
       <p>{{ commit.message }}
       </p>
     </div>
-    <div style="height : 500px; overflow : auto;">
+    <div class="diff_code" style="height : 800px; overflow : auto;">
     {% for diff in commit.diffs %}
-    <pre><code>{{ diff }}</code></pre>
+    <pre><code class="lang-diff">{{ diff }}</code></pre>
     {% endfor %}
     </div>
   </div>
-  <div style="position : absolute; width : 47%; margin : 0 47%;" id="analysis">
+  <div style="position : absolute; width : 47%; margin : 0 48%;" id="analysis">
     <form method="POST" action="{{ commit.invest_url }}" enctype="multipart/form-data" accept-charset="UTF-8">
     <div style="height : 30px;"><p>Last updated: {{ commit.updated }}</p></div>
-    <div style="height : 60px;"><input size="80" type="text" name="snote" value="{{ commit.snote }}" required></div>
+    <div style="height : 60px;"><input type="text" name="snote" value="{{ commit.snote }}" required></div>
     <div style="height : 70px;"><!-- No input required --></div>
     <div style="height : 500px;">
-      <textarea rows="25" cols="80" name="note" required>{{ commit.note }}</textarea>
+      <textarea name="note" required>{{ commit.note }}</textarea>
     </div>
-    <div style="height : 500px;">
-      <textarea rows="25" cols="80" name="analysis">{{ commit.analysis }}</textarea>
+    <div class="diff_code" style="height : 800px;">
+      <textarea name="analysis">{{ commit.analysis }}</textarea>
     </div>
     <div style="height : 50px;">
-      <div style="margin : 0 10%; width : 10%; float : left;">
+      <div style="margin : 0 0 0 0; width : 50%; float : left;">
+        <nav><a href="{{ urls.backpatch }}">Search Back-patch</a></nav>
+      </div>
+      <div style="margin : 0 0 0 30%; width : 10%; float : left;">
         <input type="submit" name="Submit">
       </div>
-      <div style="margin : 0 80%; width : 10%;">
+      <div style="margin : 0 0 0 0%; width : 10%; float : left;">
         <input type="reset" name="Clear">
       </div>
     </div>
