@@ -728,7 +728,10 @@ def search_backpatch(project, branch, commitid):
     urls = urls
   )
 
-if __name__ == "__main__":
+@app.before_first_request
+def prepare_app():
+  global pg_conn
+
   # Read configuration file
   config_ini = configparser.ConfigParser()
   config_ini.read('pgmaster.ini', encoding = 'utf-8')
@@ -744,6 +747,8 @@ if __name__ == "__main__":
     pooling = int(dbinfo['Pooling'])
   )
 
+
+if __name__ == "__main__":
   app.run(
     host = '0.0.0.0',
     debug = True
