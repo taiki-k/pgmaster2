@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2021 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -21,39 +21,20 @@
 <head>
 <meta charset="UTF-8">
 <title>pgmaster2 {{ project }} - {{ branch }} - {{ commit.sid }}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/default.min.css" integrity="sha512-kZqGbhf9JTB4bVJ0G8HCkqmaPcRgo88F0dneK30yku5Y/dep7CZfCnNml2Je/sY4lBoqoksXz4PtVXS4GHSUzQ==" crossorigin="anonymous" />
-<style type="text/css">
-<!--
-* {
-  padding : 0px;
-  margin  : 0px;
-}
-.diff_code {
-  margin-top : 10px;
-}
-pre {
-  border-style : solid;
-  border-width : 1px;
-}
-input, textarea {
-  width : 100%;
-  resize: none;
-}
-textarea {
-  height : 99%;
-}
--->
-</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/stackoverflow-light.min.css" integrity="sha512-cG1IdFxqipi3gqLmksLtuk13C+hBa57a6zpWxMeoY3Q9O6ooFxq50DayCdm0QrDgZjMUn23z/0PMZlgft7Yp5Q==" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.css" integrity="sha512-ALDCcjE3/qN1laPSK0zKyQEXyE1oE1RPAknXgls51YXMHbRiny+jb/GZ1466Xm5Zg8cR5uN8PA2ZsdlPnKnzCA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.9.55/css/materialdesignicons.min.css" integrity="sha512-vIgFb4o1CL8iMGoIF7cYiEVFrel13k/BkTGvs0hGfVnlbV6XjAA0M0oEHdWqGdAVRTDID3vIZPOHmKdrMAUChA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js" integrity="sha512-7t8APmYpzEsZP7CYoA7RfMPV9Bb+PJHa9x2WiUnDXZx3XHveuyWUtvNOexhkierl5flZ3tr92dP1mMS+SGlD+A==" crossorigin="anonymous"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js" integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.4/vuetify.min.js" integrity="sha512-40UqZDp4E5IZGFERqFUR9iqEel1hW1nSn+Lov9mgwvTVhaptNw6/3oQVIio1PA8L1njnhjCTrwibfvZOhrArlw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+<script src="/static/vue-highlightjs.js"></script>
 <!--
-<p>Investigate : {{ project }} &gt; {{ branch }} &gt; {{ commit.id }} ({{ commit.sid }})</p>
--->
 <div style="margin : 2%;">
-  <h1>Investigate : {{ commit.id }}</h1>
-<!--
   <p>Repository Browser Link</p>
   <table>
     <tr>
@@ -62,50 +43,302 @@ textarea {
       <td><a>Diff</a></td>
     <tr>
   </table>
--->
-  </div>
-<div style="margin : 2%;">
-  <div style="position : absolute; width : 47%; float : left;" id="original">
-    <div style="height : 30px;"><!-- No output here --></div>
-    <h3 style="height : 60px;">{{ commit.summary }}</h3>
-    <div style="height : 70px;">
-      <p>Author: {{ commit.author }}<br>
-      Date: {{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</p>
-    </div>
-    <div style="height : 500px; overflow : auto;">
-      <p>{{ commit.message }}
-      </p>
-    </div>
-    <div class="diff_code" style="height : 800px; overflow : auto;">
-    {% for diff in commit.diffs %}
-    <pre><code class="lang-diff">{{ diff }}</code></pre>
-    {% endfor %}
-    </div>
-  </div>
-  <div style="position : absolute; width : 47%; margin : 0 48%;" id="analysis">
-    <form method="POST" action="{{ commit.invest_url }}" enctype="multipart/form-data" accept-charset="UTF-8">
-    <div style="height : 30px;"><p>Last updated: {{ commit.updated }}</p></div>
-    <div style="height : 60px;"><input type="text" name="snote" value="{{ commit.snote }}" required></div>
-    <div style="height : 70px;"><!-- No input required --></div>
-    <div style="height : 500px;">
-      <textarea name="note" required>{{ commit.note }}</textarea>
-    </div>
-    <div class="diff_code" style="height : 800px;">
-      <textarea name="analysis">{{ commit.analysis }}</textarea>
-    </div>
-    <div style="height : 50px;">
-      <div style="margin : 0 0 0 0; width : 50%; float : left;">
-        <nav><a href="{{ urls.backpatch }}">Search Back-patch</a></nav>
-      </div>
-      <div style="margin : 0 0 0 30%; width : 10%; float : left;">
-        <input type="submit" name="Submit">
-      </div>
-      <div style="margin : 0 0 0 0%; width : 10%; float : left;">
-        <input type="reset" name="Clear">
-      </div>
-    </div>
-    </form>
-  </div>
 </div>
+-->
+<div id="app">
+  <v-app>
+    <v-app-bar
+      app
+      dark
+      color="indigo"
+    >
+      <v-app-bar-title>Investigate: {{ commit.sid }}</v-app-bar-title>
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <v-row>
+          <v-col>
+            <v-breadcrumbs
+              :items="nav_items"
+            >
+              <template v-slot:divider>
+                <v-icon>mdi-chevron-right</v-icon>
+              </template>
+            </v-breadcrumbs>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
+            cols="6"
+          >
+            <!-- Padding -->
+          </v-col>
+          <v-col
+            cols="6"
+          >
+            <v-card
+              outlined
+            >
+              <v-list-item two-line>
+                <v-list-item-content>
+                  <v-list-item-title>Last updated</v-list-item-title>
+                  <v-list-item-subtitle>{{ commit.updated }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-form
+          ref="invest"
+          v-mode="formValid"
+          @submit.prevent="modify"
+        >
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <v-card
+                outlined
+                elevation="4"
+                class="overflow-y-auto"
+                style="height: 108px"
+              >
+                <v-card-title
+                  class="title text--primary"
+                >
+                  {{ commit.summary }}
+                </v-card-title>
+              </v-card>
+            </v-col>
+            <v-col
+              cols="6"
+            >
+              <v-text-field
+                v-model="investSNote"
+                label="Short note (Title)"
+                height="108"
+                outlined
+                clearable
+                required
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <v-card
+                outlined
+                elevation="4"
+              >
+                <v-list-item two-line>
+                  <v-list-item-content>
+                    <v-list-item-title>Author</v-list-item-title>
+                    <v-list-item-subtitle>{{ commit.author }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item two-line>
+                  <v-list-item-content>
+                    <v-list-item-title>Commit Date</v-list-item-title>
+                    <v-list-item-subtitle>{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-card>
+            </v-col>
+            <v-col
+              cols="6"
+            >
+              <!-- Padding -->
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <v-card
+                outlined
+                elevation="4"
+                class="overflow-y-auto"
+                style="height: 600px"
+              >
+                <v-card-text>
+                  <p>{{ commit.message }}
+                  </p>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col
+              cols="6"
+            >
+              <v-textarea
+                v-model="investNote"
+                label="Note"
+                height="600"
+                required
+                clearable
+                outlined>
+              </v-textarea>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <v-container
+                class="overflow-x-auto overflow-y-auto"
+                style="height: 600px;"
+              >
+{% for diff in commit.diffs %}
+                <v-row
+                  dense
+                >
+                  <v-col>
+                    <pre
+                      v-highlightjs
+                    ><code class="lang-diff" style="overflow-x: visible">{{ diff }}</code></pre>
+                  </v-col>
+                </v-row>
+{% endfor %}
+              </v-container>
+            </v-col>
+            <v-col
+              cols="6"
+            >
+              <v-textarea
+                v-model="investAnalysis"
+                label="Code Analysis"
+                height="600"
+                required
+                clearable
+                outlined>
+              </v-textarea>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <!-- Padding -->
+            </v-col>
+            <v-col
+              cols="6"
+            >
+              <v-combobox
+                v-model="investKeywords"
+                :items="kwd_items"
+                label="Keywords"
+                ref="kwdComboBox"
+                outlined
+                clearable
+                multiple
+                chips
+              >
+              </v-combobox>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              cols="6"
+            >
+              <!-- Padding -->
+            </v-col>
+            <v-col
+              cols="1"
+            >
+              <v-btn
+                href="{{ urls.backpatch }}"
+              >
+                <v-icon>mdi-magnify</v-icon>
+                Search Back-patch
+              </v-btn>
+            </v-col>
+            <v-col
+              cols="4"
+            >
+              <!-- Padding -->
+            </v-col>
+            <v-col
+              cols="1"
+            >
+              <v-btn
+                :color="btnColor"
+                dark
+                @click="modify"
+                :loading="btnLoading"
+              >Submit</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-container>
+    </v-main>
+  </v-app>
+</div>
+<script>
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+      formValid: true,
+      btnColor: 'indigo',
+      btnLoading: false,
+      investSNote: "{{ commit.snote }}",
+      investNote: "{{ commit.note }}",
+      investAnalysis: "{{ commit.analysis }}",
+      investKeywords: {{ commit.keywords }},
+      kwd_items: {{ keywords }},
+      nav_items: [
+        {
+          text: "/",
+          disabled: false,
+          href: "/"
+        },
+        {
+          text: "{{ project }}",
+          disabled: false,
+          href: "{{ url_for('project', project = project) }}"
+        },
+        {
+          text: "{{ branch }}",
+          disabled: false,
+          href: "{{ url_for('branch', project = project, branch = branch) }}"
+        },
+        {
+          text: "{{ commit.sid }}",
+          disabled: true,
+          href: "#"
+        },
+      ],
+    },
+    methods: {
+      modify : async function() {
+        this.$refs.kwdComboBox.blur();
+        this.$nextTick(async () => {
+          send_data = {
+            snote: this.investSNote,
+            note: this.investNote,
+            analysis: this.investAnalysis,
+            keywords: this.investKeywords
+          };
+
+          this.btnLoading = true;
+          try {
+            res = await axios.post(
+              "{{ url_for('webapi_v1.investigate_modify', project = project, branch = branch, commitid = commit.id) }}",
+              send_data
+            );
+            this.btnColor = 'indigo';
+          }
+          catch (error) {
+            this.btnColor = 'error';
+          }
+          finally {
+            this.btnLoading = false;
+          }
+        });
+      }
+    }
+  });
+</script>
 </body>
 </html>

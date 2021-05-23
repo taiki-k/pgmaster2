@@ -1,4 +1,6 @@
-# Copyright (C) 2020 Kondo Taiki
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2020-2021 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -19,7 +21,15 @@ import psycopg2
 import psycopg2.pool
 
 class pg_connection:
-  def __init__(self, server = '127.0.0.1', port = '5432', database = 'postgres', user = '', password = '', pooling = 0):
+  def __init__(
+    self,
+    server = '127.0.0.1',
+    port = '5432',
+    database = 'postgres',
+    user = '',
+    password = '',
+    pooling = 0
+  ):
     """
     pg_connection() - Initialize the connection
     server   : Host name or IP address of the database server

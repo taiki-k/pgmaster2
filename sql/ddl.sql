@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS _investigation
   snote      text,     -- Summary of this commit
   note       text,     -- Commit message of this commit
   analysis   text,     -- Analyzing memo of this commit
+  keywords   text[],   -- Keywords of this commit
   PRIMARY KEY(project, commitid, branch)
 )
 PARTITION BY list ( project );

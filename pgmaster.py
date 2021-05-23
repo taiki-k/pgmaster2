@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Kondo Taiki
+# Copyright (C) 2020-2021 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -21,7 +21,6 @@
 import sys
 import os
 import errno
-import psycopg2
 import datetime, time
 import fcntl
 import configparser
@@ -31,8 +30,12 @@ from git import *
 from flask import *
 
 import pg_connection
+import webapi_v1
 
 app = Flask(__name__)
+# Register WebAPI v1
+app.register_blueprint(webapi_v1.api, url_prefix=u'/api/v1')
+
 pg_conn = None
 
 @app.route('/')
@@ -342,6 +345,14 @@ def investigate(project, branch, commitid):
   fd = None
   conn = pg_conn.connect()
 
+  # We have to replace from following chars to escaped one,
+  # because these will be inserted as JSON string.
+  trans_escaped = str.maketrans({
+      '"' : r'\"',
+      '\\' : r'\\',
+      '\n' : r'\n'
+    })
+
   try:
     # Connect to git repository
     fd = open(u'git/.lock.' + project, 'r')
@@ -351,6 +362,7 @@ def investigate(project, branch, commitid):
     if not repo.bare:
       raise FileNotFoundError
 
+    # Get commit information
     with conn.cursor() as cursor:
       cursor.execute(u"""SELECT
           b.scommitid,
@@ -359,7 +371,8 @@ def investigate(project, branch, commitid):
           i.updatetime,
           i.snote,
           i.note,
-          i.analysis
+          i.analysis,
+          i.keywords
         FROM
           _branch b
           LEFT JOIN _investigation i USING (project, branch, commitid)
@@ -381,9 +394,10 @@ def investigate(project, branch, commitid):
         'message'    : make_html_message(commit.message),
         'author'     : commit.author,
         'diffs'      : make_patch(p_commit, commit),
-        'snote'      : c[4] if c[4] is not None else u'',
-        'note'       : c[5] if c[5] is not None else u'',
-        'analysis'   : c[6] if c[6] is not None else u'',
+        'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
+        'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
+        'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
+        'keywords'   : c[7] if c[7] is not None else [],
         'invest_url' : url_for(
           'investigate_modify',
           project = project,
@@ -391,6 +405,29 @@ def investigate(project, branch, commitid):
           commitid = commitid
         )
       }
+    # End of "with conn.cursor()"
+
+    # Get keywords
+    # TODO: Commonalize logic between here and WebAPI.
+    keywords = []
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+          array_agg(DISTINCT k)
+        FROM (
+          SELECT
+            UNNEST(keywords) AS k
+          FROM
+            _investigation i
+          WHERE
+            project = %s AND keywords IS NOT NULL
+          ORDER BY
+            k
+        ) AS t""",
+        [project]
+      )
+
+      c = cursor.fetchone()
+      keywords.extend(c[0] if c[0] is not None else [])
 
   except OSError as e:
     # Can't aquire lock
@@ -414,88 +451,20 @@ def investigate(project, branch, commitid):
     project = project,
     branch = branch,
     commit = c_info,
+    keywords = keywords,
     urls = urls
   )
 
 @app.route('/p/<project>/b/<branch>/c/<commitid>/modify', methods = ['POST'])
 def investigate_modify(project, branch, commitid):
   """
-  investigate_modify() - Insert or Update a result of investigation.
+  [ABOLISHED] investigate_modify() - Insert or Update a result of investigation.
     project : project name
     branch  : branch name
     commitid: commitid
+  This procedure is ABOLISHED and DO NOT USE. Use WebAPI instead.
   """
-  form_data = {}
-  form_data.update(request.form)  # Make copy
-  try:
-    if len(form_data['snote']) <= 0:
-      raise ValueError
-    else:
-      #form_data['snote'] = u'\n'.join(form_data['snote'].striplines())
-      pass
-
-    if len(form_data['note']) <= 0:
-      raise ValueError
-    else:
-      form_data['note'] = u'\n'.join(form_data['note'].splitlines())
-
-    if len(form_data['analysis']) <= 0:
-      pass
-    else:
-      form_data['analysis'] = u'\n'.join(form_data['analysis'].splitlines())
-  except Exception as e:
-    abort(403, traceback.format_exc())
-
-  conn = pg_conn.connect()
-
-  try:
-    with conn.cursor() as cursor:
-      cursor.execute(u"""INSERT INTO _investigation (
-          project,
-          branch,
-          commitid,
-          snote,
-          note,
-          analysis
-        ) VALUES (
-          %s,
-          %s,
-          %s,
-          %s,
-          %s,
-          %s
-        ) ON CONFLICT ON CONSTRAINT _investigation_pkey
-        DO UPDATE SET
-          snote = %s,
-          note = %s,
-          analysis = %s,
-          updatetime = now()""",
-        [
-          project,
-          branch,
-          commitid,
-          form_data['snote'],
-          form_data['note'],
-          form_data['analysis'],
-          form_data['snote'],  # for UPSERT
-          form_data['note'],
-          form_data['analysis']
-        ]
-      )
-    conn.commit()
-  except psycopg2.Error as e:
-    abort(500, traceback.format_exc())
-  finally:
-    pg_conn.close(conn)
-
-  return redirect(
-    url_for(
-      'investigate',
-      project = project,
-      branch = branch,
-      commitid = commitid
-    )
-  )
+  abort(410, traceback.format_exc())
 
 @app.route('/p/<project>/c/<commitid>/')
 def search_commit(project, commitid):
@@ -746,6 +715,9 @@ def prepare_app():
     password = dbinfo['Password'],
     pooling = int(dbinfo['Pooling'])
   )
+
+  # Register pg_connection instance to WebAPI
+  webapi_v1.pg_conn = pg_conn
 
 
 if __name__ == "__main__":

@@ -11,6 +11,14 @@ See `COPYING` file for more information.
 
 If you don't recieve it, see [the GNU web site](http://www.gnu.org/licenses/).
 
+### Exceptions
+
+This software contains (and uses) "vue-highlightjs" related code,
+and it is licensed under the MIT license.
+
+For more information about "vue-highlightjs",
+see https://github.com/metachris/vue-highlightjs.
+
 ## How to Setup
 
 You can use "pgmaster2" as a standalone server,  
