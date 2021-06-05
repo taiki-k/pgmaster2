@@ -18,3 +18,16 @@
 
 #}{% extends "base_search.html.jinja2" %}
 {% block title %} {{ project }} - {{ branch }}{% endblock %}
+
+{% block navi_items %}
+        {
+          text: "{{ project }}",
+          disabled: false,
+          href: "{{ url_for('project', project = project) }}"
+        },
+        {
+          text: "{{ branch }}",
+          disabled: true,
+          href: "#"
+        },
+{% endblock %}

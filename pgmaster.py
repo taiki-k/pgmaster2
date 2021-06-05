@@ -153,21 +153,8 @@ def branch(project, branch):
       url_for('branch', project = project, branch = branch, page = page, num = num)
     )
 
-  urls = {
-    'page' : page,
-    'num'  : num,
-    'prev' : url_for(
-      'branch', project = project, branch = branch,
-      page = page - 1,
-      num = num
-      ),
-    'next' : url_for(
-      'branch', project = project, branch = branch,
-      page = page + 1,
-      num = num
-      )
-  }
   commits = []
+  max_page = 0
   fd = None
   conn = pg_conn.connect()
 
@@ -179,6 +166,27 @@ def branch(project, branch):
 
     if not repo.bare:
       raise FileNotFoundError
+
+    # Calcurate max number of page.
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+        count(*)
+      FROM
+        _branch
+      WHERE
+        project = %s AND branch = %s
+      """,
+      [project, branch])
+
+      rows = cursor.fetchall()
+      if len(rows) <= 0:
+        raise FileNotFoundError
+
+      # This returns only 1 row with 1 column.
+      rows_count = rows[0][0]
+      if rows_count <= 0:
+        raise FileNotFoundError
+      max_page = rows_count // num + (0 if rows_count % num == 0 else 1)
 
     with conn.cursor() as cursor:
       cursor.execute(u"""SELECT
@@ -237,6 +245,13 @@ def branch(project, branch):
       fd.close()
       fd = None
     pg_conn.close(conn)
+
+  urls = {
+    'page' : page,
+    'num'  : num,
+    'max_page' : max_page,
+    'baseURL' : url_for('branch', project = project, branch = branch),
+  }
 
   return render_template(
     'branch.html.jinja2',
@@ -612,6 +627,10 @@ def search_backpatch(project, branch, commitid):
   urls = None
 
   commits = []
+  this_commit = {
+    'id'  : commitid,
+    'sid' : None
+  }
   fd = None
   conn = pg_conn.connect()
 
@@ -671,6 +690,8 @@ def search_backpatch(project, branch, commitid):
           )
         }
         commits.append(c_info)
+        if c_info['id'] == commitid:
+          this_commit['sid'] = c_info['sid']
 
   except OSError as e:
     # Can't aquire lock
@@ -692,7 +713,8 @@ def search_backpatch(project, branch, commitid):
   return render_template(
     'search_backpatch.html.jinja2',
     project = project,
-    commitid = commitid,
+    branch = branch,
+    commit = this_commit,
     commits = commits,
     urls = urls
   )

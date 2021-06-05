@@ -21,11 +21,63 @@
 <head>
 <meta charset="UTF-8">
 <title>pgmaster2{% block title %}{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.css" integrity="sha512-ALDCcjE3/qN1laPSK0zKyQEXyE1oE1RPAknXgls51YXMHbRiny+jb/GZ1466Xm5Zg8cR5uN8PA2ZsdlPnKnzCA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.9.55/css/materialdesignicons.min.css" integrity="sha512-vIgFb4o1CL8iMGoIF7cYiEVFrel13k/BkTGvs0hGfVnlbV6XjAA0M0oEHdWqGdAVRTDID3vIZPOHmKdrMAUChA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-<h1>pgmaster2{{ self.title() }}</h1>
-<p>{% block message %}{% endblock %}</p>
-{% block selections %}
-{% endblock %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js" integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js" integrity="sha512-36v63iCIica4vWLH2YSbz030v65pMUMXL5PXJCJ8+vSF99ME+lJWauL8am5LB39m3SaBinFTzgW0n87INJYo5g==" crossorigin="anonymous"></script>
+<div id="app">
+  <v-app>
+    <v-app-bar
+      app
+      dark
+      color="indigo"
+    >
+      <v-toolbar-title>pgmaster2{{ self.title() }}</v-toolbar-title>
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <v-row>
+          <v-col>
+            <v-breadcrumbs
+              :items="nav_items"
+            >
+              <template v-slot:divider>
+                <v-icon>mdi-chevron-right</v-icon>
+              </template>
+            </v-breadcrumbs>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <p>{% block message %}{% endblock %}</p>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>{% block selections %}{% endblock %}
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
+</div>
+<script>
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+      nav_items: [
+        {
+          text: "Top",
+          disabled: false,
+          href: "{{ url_for('root') }}"
+        },{% block navi_items %}{% endblock %}
+      ],{% block extra_data %}{% endblock %}
+    }
+  });
+</script>
 </body>
 </html>

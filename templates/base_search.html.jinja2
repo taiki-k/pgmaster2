@@ -18,40 +18,68 @@
 
 #}{% extends "base.html.jinja2" %}
 {% block message %}Select a Commit ID to investigate.{% endblock %}
+
 {% block selections %}
+            <v-sheet outlined>
+              <v-row>
+                <v-col>
 {% if urls is defined and urls is not none %}
-<nav style="display: inline-block;"><ul style="list-style-type: none;padding-left: 0;">
-  <li style="display: inline-block;">{% if urls.page > 1 %}<a href="{{ urls.prev }}">{% endif %}PREV{% if urls.page > 1 %}</a>{% endif %}</li>
-  <li style="display: inline-block;">{% if commits|length == urls.num %}<a href="{{ urls.next }}">{% endif %}NEXT{% if commits|length == urls.num %}</a>{% endif %}</li>
-</ul></nav>
-{% endif %}
-<table border="1" width="100%">
-  <tbody>
-    <tr>
-{% block table_title_head %}{% endblock %}
-{% if commits[0].branch is defined %}      <th>Branch</th>{% endif %}
-      <th>Commit ID</th>
-      <th>Commit Date</th>
-      <th>Title</th>
-      <th>Author</th>
-      <th>Updated</th>
-    </tr>
+                  <v-pagination
+                    v-model="page"
+                    :length="max_page"
+                    :total-visible="10"
+                    @input="pushPage"
+                  ></v-pagination>{% endif %}
+                  <v-simple-table
+                    dense
+                  >
+                    <template>
+                      <thead>
+                        <tr>{% block table_title_head %}{% endblock %}
+{% if commits[0].branch is defined %}
+                          <th>Branch</th>{% endif %}
+                          <th>Commit ID</th>
+                          <th>Commit Date</th>
+                          <th>Title</th>
+                          <th>Author</th>
+                          <th>Updated</th>
+                        </tr>
+                      </thead>
+                      <tbody>
 {% for commit in commits %}
-    <tr>
-{% if commit.branch is defined %}      <td>{{ commit.branch }}</td>{% endif %}
-      <td style="font-family:monospace;"><a title="{{ commit.id }}" href="{{ commit.url }}">{{ commit.sid }}</a></td>
-      <td style="font-family:monospace;">{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</td>
-      <td>{{ commit.summary }}</td>
-      <td>{{ commit.author }}</td>
-      <td>{{ commit.updated }}</td>
-    </tr>
-{% endfor %}
-  </tbody>
-</table>
+                        <tr>{% if commit.branch is defined %}
+                          <td>{{ commit.branch }}</td>{% endif %}
+                          <td style="font-family:monospace;"><a title="{{ commit.id }}" href="{{ commit.url }}">{{ commit.sid }}</a></td>
+                          <td style="font-family:monospace;">{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</td>
+                          <td>{{ commit.summary }}</td>
+                          <td>{{ commit.author }}</td>
+                          <td>{{ commit.updated }}</td>
+                        </tr>{% endfor %}
+                      </tbody>
+                    </template>
+                  </v-simple-table>
 {% if urls is defined and urls is not none %}
-<nav style="display: inline-block;"><ul style="list-style-type: none;padding-left: 0;">
-  <li style="display: inline-block;">{% if urls.page > 1 %}<a href="{{ urls.prev }}">{% endif %}PREV{% if urls.page > 1 %}</a>{% endif %}</li>
-  <li style="display: inline-block;">{% if commits|length == urls.num %}<a href="{{ urls.next }}">{% endif %}NEXT{% if commits|length == urls.num %}</a>{% endif %}</li>
-</ul></nav>
+                  <v-pagination
+                    v-model="page"
+                    :length="max_page"
+                    :total-visible="10"
+                    @input="pushPage"
+                  ></v-pagination>{% endif %}
+                </v-col>
+              </v-row>
+            </v-sheet>
+{% endblock %}
+
+{% block extra_data %}
+{% if urls is defined and urls is not none %}
+      page: {{ urls.page }},
+      max_page: {{ urls.max_page }}
+    }, // end of *data*
+    methods: {
+      pushPage: function(page) {
+        linkURL = "{{ urls.baseURL }}?page=" + page + "&num={{ urls.num }}";
+        page = {{ urls.page }};
+        location.href = linkURL;
+      },
 {% endif %}
 {% endblock %}

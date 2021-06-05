@@ -18,8 +18,22 @@
 
 #}{% extends "base.html.jinja2" %}
 {% block selections %}
-<ul>
-{% block list %}
-{% endblock %}
-</ul>
+            <v-sheet>
+              <v-row>
+                <v-col
+                  cols="6"
+                >
+                  <v-list
+                    dense
+                    outlined
+                    nav
+                  >
+                    <v-list-item-group
+                      color="primary"
+                    >{% block list %}{% endblock %}
+                    </v-list-item-group>
+                  </v-list>
+                </v-col>
+              </v-row>
+            </v-sheet>
 {% endblock %}

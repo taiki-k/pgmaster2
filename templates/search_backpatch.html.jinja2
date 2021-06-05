@@ -17,4 +17,27 @@
   along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
 
 #}{% extends "base_search.html.jinja2" %}
-{% block title %} {{ project }} - Back-patch {{ commitid }}{% endblock %}
+{% block title %} {{ project }} - Back-patch {{ commit.sid }}{% endblock %}
+
+{% block navi_items %}
+        {
+          text: "{{ project }}",
+          disabled: false,
+          href: "{{ url_for('project', project = project) }}"
+        },
+        {
+          text: "{{ branch }}",
+          disabled: false,
+          href: "{{ url_for('branch', project = project, branch = branch) }}"
+        },
+        {
+          text: "{{ commit.sid }}",
+          disabled: false,
+          href: "{{ url_for('investigate', project = project, branch = branch, commitid = commit.id) }}"
+        },
+        {
+          text: "Back-patch",
+          disabled: true,
+          href: "#"
+        }
+{% endblock %}

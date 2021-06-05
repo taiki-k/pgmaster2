@@ -18,9 +18,22 @@
 
 #}{% extends "base_select.html.jinja2" %}
 {% block title %}{% endblock %}
+
 {% block message %}Hello! Select a project to investigate.{% endblock %}
+
 {% block list %}
+
 {% for project in projects %}
-  <li><a href="{{ project.url }}">{{ project.name }}</a></li>
-{% endfor %}
+                      <v-list-item
+                        href="{{ project.url }}"
+                      >
+                        <v-list-item-icon>
+                          <v-icon
+                            color="deep-orange"
+                          >mdi-git</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>{{ project.name }}</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>{% endfor %}
 {% endblock %}

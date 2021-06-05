@@ -29,7 +29,7 @@
 </head>
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js" integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.4/vuetify.min.js" integrity="sha512-40UqZDp4E5IZGFERqFUR9iqEel1hW1nSn+Lov9mgwvTVhaptNw6/3oQVIio1PA8L1njnhjCTrwibfvZOhrArlw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js" integrity="sha512-36v63iCIica4vWLH2YSbz030v65pMUMXL5PXJCJ8+vSF99ME+lJWauL8am5LB39m3SaBinFTzgW0n87INJYo5g==" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
 <script src="/static/vue-highlightjs.js"></script>
@@ -52,7 +52,7 @@
       dark
       color="indigo"
     >
-      <v-app-bar-title>Investigate: {{ commit.sid }}</v-app-bar-title>
+      <v-toolbar-title>pgmaster2 Investigate: {{ commit.sid }}</v-toolbar-title>
     </v-app-bar>
     <v-main>
       <v-container>
@@ -289,9 +289,9 @@
       kwd_items: {{ keywords }},
       nav_items: [
         {
-          text: "/",
+          text: "Top",
           disabled: false,
-          href: "/"
+          href: "{{ url_for('root') }}"
         },
         {
           text: "{{ project }}",
@@ -311,7 +311,7 @@
       ],
     },
     methods: {
-      modify : async function() {
+      modify: async function() {
         this.$refs.kwdComboBox.blur();
         this.$nextTick(async () => {
           send_data = {
