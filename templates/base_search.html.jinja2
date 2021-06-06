@@ -77,9 +77,8 @@
     }, // end of *data*
     methods: {
       pushPage: function(page) {
-        linkURL = "{{ urls.baseURL }}?page=" + page + "&num={{ urls.num }}";
-        page = {{ urls.page }};
-        location.href = linkURL;
+        this.page = {{ urls.page }};
+        location.href  = "{{ urls.baseURL }}?page=" + page + "&num={{ urls.num }}";
       },
 {% endif %}
 {% endblock %}
