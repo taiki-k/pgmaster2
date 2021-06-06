@@ -94,7 +94,12 @@ def project(project):
         project = %s;""",
       [project]
       )
-      for (b,) in cursor.fetchall():
+
+      rows = cursor.fetchall()
+      if len(rows) <= 0:
+        raise FileNotFoundError
+
+      for (b,) in rows:
         b_info = {
           'name' : b,
           'url'  : url_for(
@@ -104,6 +109,8 @@ def project(project):
           )
         }
         branches.append(b_info)
+  except FileNotFoundError as e:
+    abort(404)
   except Exception as e:
     abort(500, traceback.format_exc())
   finally:
@@ -229,14 +236,14 @@ def branch(project, branch):
         }
         commits.append(c_info)
 
+  except FileNotFoundError as e:
+    abort(404)
   except OSError as e:
     # Can't aquire lock
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
       abort(500, traceback.format_exc())
-  except FileNotFoundError as e:
-    abort(404)
   except Exception as e:
     abort(500, traceback.format_exc())
   finally:
@@ -397,6 +404,9 @@ def investigate(project, branch, commitid):
       )
 
       c = cursor.fetchone()
+      if c is None:
+        raise FileNotFoundError
+
       commit = repo.commit(commitid)
       p_commit = commit.parents[0]
       c_info = {
@@ -444,14 +454,14 @@ def investigate(project, branch, commitid):
       c = cursor.fetchone()
       keywords.extend(c[0] if c[0] is not None else [])
 
+  except FileNotFoundError as e:
+    abort(404)
   except OSError as e:
     # Can't aquire lock
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
       abort(500, traceback.format_exc())
-  except FileNotFoundError as e:
-    abort(404)
   except Exception as e:
     abort(500, traceback.format_exc())
   finally:
@@ -576,14 +586,14 @@ def search_commit(project, commitid):
         }
         commits.append(c_info)
 
+  except FileNotFoundError as e:
+    abort(404)
   except OSError as e:
     # Can't aquire lock
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
       abort(500, traceback.format_exc())
-  except FileNotFoundError as e:
-    abort(404)
   except Exception as e:
     abort(500, traceback.format_exc())
   finally:
@@ -693,14 +703,14 @@ def search_backpatch(project, branch, commitid):
         if c_info['id'] == commitid:
           this_commit['sid'] = c_info['sid']
 
+  except FileNotFoundError as e:
+    abort(404)
   except OSError as e:
     # Can't aquire lock
     if e.errno == errno.EACCES or e.errno == errno.EAGAIN:
       abort(503)
     else:
       abort(500, traceback.format_exc())
-  except FileNotFoundError as e:
-    abort(404)
   except Exception as e:
     abort(500, traceback.format_exc())
   finally:
