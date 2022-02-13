@@ -372,7 +372,8 @@ def investigate(project, branch, commitid):
   trans_escaped = str.maketrans({
       '"' : r'\"',
       '\\' : r'\\',
-      '\n' : r'\n'
+      '\n' : r'\n',
+      '\r' : r''
     })
 
   try:
