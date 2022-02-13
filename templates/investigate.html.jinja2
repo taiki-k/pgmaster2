@@ -163,7 +163,7 @@
                 style="height: 600px"
               >
                 <v-card-text>
-                  <p>{{ commit.message }}
+                  <p v-pre>{{ commit.message }}
                   </p>
                 </v-card-text>
               </v-card>
@@ -196,7 +196,7 @@
                   <v-col>
                     <pre
                       v-highlightjs
-                    ><code class="lang-diff" style="overflow-x: visible">{{ diff }}</code></pre>
+                    ><code class="lang-diff" style="overflow-x: visible" v-pre>{{ diff }}</code></pre>
                   </v-col>
                 </v-row>
 {% endfor %}
