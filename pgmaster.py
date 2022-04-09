@@ -226,7 +226,7 @@ def branch(project, branch):
           'tz'      : c[3],
           'updated' : c[4],
           'summary' : html.escape(commit.summary),
-          'author'  : commit.author,
+          'author'  : html.escape(commit.author.name),
           'url'     : url_for(
             'investigate',
             project = project,
@@ -418,7 +418,7 @@ def investigate(project, branch, commitid):
         'updated'    : c[3],
         'summary'    : html.escape(commit.summary),
         'message'    : make_html_message(commit.message),
-        'author'     : commit.author,
+        'author'     : html.escape(commit.author.name + ' <' + commit.author.email + '>'),
         'diffs'      : make_patch(p_commit, commit),
         'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
         'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
@@ -577,7 +577,7 @@ def search_commit(project, commitid):
           'updated' : c[4],
           'branch'  : c[5],
           'summary' : html.escape(commit.summary),
-          'author'  : commit.author,
+          'author'  : html.escape(commit.author.name),
           'url'     : url_for(
             'investigate',
             project = project,
@@ -692,7 +692,7 @@ def search_backpatch(project, branch, commitid):
           'updated' : c[4],
           'branch'  : c[5],
           'summary' : html.escape(commit.summary),
-          'author'  : commit.author,
+          'author'  : html.escape(commit.author.name),
           'url'     : url_for(
             'investigate',
             project = project,
