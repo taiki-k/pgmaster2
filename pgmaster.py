@@ -225,7 +225,7 @@ def branch(project, branch):
           'date'    : c[2],
           'tz'      : c[3],
           'updated' : c[4],
-          'summary' : commit.summary,
+          'summary' : html.escape(commit.summary),
           'author'  : commit.author,
           'url'     : url_for(
             'investigate',
@@ -416,7 +416,7 @@ def investigate(project, branch, commitid):
         'date'       : c[1],
         'tz'         : c[2],
         'updated'    : c[3],
-        'summary'    : commit.summary,
+        'summary'    : html.escape(commit.summary),
         'message'    : make_html_message(commit.message),
         'author'     : commit.author,
         'diffs'      : make_patch(p_commit, commit),
@@ -576,7 +576,7 @@ def search_commit(project, commitid):
           'tz'      : c[3],
           'updated' : c[4],
           'branch'  : c[5],
-          'summary' : commit.summary,
+          'summary' : html.escape(commit.summary),
           'author'  : commit.author,
           'url'     : url_for(
             'investigate',
@@ -691,7 +691,7 @@ def search_backpatch(project, branch, commitid):
           'tz'      : c[3],
           'updated' : c[4],
           'branch'  : c[5],
-          'summary' : commit.summary,
+          'summary' : html.escape(commit.summary),
           'author'  : commit.author,
           'url'     : url_for(
             'investigate',
