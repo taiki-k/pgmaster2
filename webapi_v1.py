@@ -57,7 +57,7 @@ def keywords(project):
     'keywords': keywords
   })
 
-@api.route('/p/<project>/b/<branch>/c/<commitid>/modify', methods = ['POST'])
+@api.route('/p/<project>/b/<path:branch>/c/<commitid>/modify', methods = ['POST'])
 def investigate_modify(project, branch, commitid):
   """
   investigate_modify() - Insert or Update a result of investigation.
