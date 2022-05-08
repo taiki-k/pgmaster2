@@ -138,7 +138,7 @@ def validate_page_number(request_args, page = 1, num = 20):
   
   return (page, num)
 
-@app.route('/p/<project>/b/<branch>/')
+@app.route('/p/<project>/b/<path:branch>/')
 def branch(project, branch):
   """
   branch() - Generate page for /p/<project>/b/<branch>/
@@ -268,7 +268,7 @@ def branch(project, branch):
     urls = urls
   )
 
-@app.route('/p/<project>/b/<branch>/c/<commitid>/')
+@app.route('/p/<project>/b/<path:branch>/c/<commitid>/')
 def investigate(project, branch, commitid):
   """
   investigate() - Generate page for /p/<project>/b/<branch>/c/<commitid>
@@ -425,7 +425,7 @@ def investigate(project, branch, commitid):
         'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
         'keywords'   : c[7] if c[7] is not None else [],
         'invest_url' : url_for(
-          'investigate_modify',
+          'webapi_v1.investigate_modify',
           project = project,
           branch = branch,
           commitid = commitid
@@ -480,17 +480,6 @@ def investigate(project, branch, commitid):
     keywords = keywords,
     urls = urls
   )
-
-@app.route('/p/<project>/b/<branch>/c/<commitid>/modify', methods = ['POST'])
-def investigate_modify(project, branch, commitid):
-  """
-  [ABOLISHED] investigate_modify() - Insert or Update a result of investigation.
-    project : project name
-    branch  : branch name
-    commitid: commitid
-  This procedure is ABOLISHED and DO NOT USE. Use WebAPI instead.
-  """
-  abort(410, traceback.format_exc())
 
 @app.route('/p/<project>/c/<commitid>/')
 def search_commit(project, commitid):
@@ -612,7 +601,7 @@ def search_commit(project, commitid):
     urls = urls
   )
 
-@app.route('/p/<project>/b/<branch>/c/<commitid>/backpatch')
+@app.route('/p/<project>/b/<path:branch>/c/<commitid>/backpatch')
 def search_backpatch(project, branch, commitid):
   """
   search_backpatch() - Generate page for /p/<project>/b/<branch>/c/<commitid>/backpatch
