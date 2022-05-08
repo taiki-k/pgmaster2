@@ -24,6 +24,14 @@ see https://github.com/metachris/vue-highlightjs.
 You can use "pgmaster2" as a standalone server,  
 but you should use with Web server like Apache, nginx, lighttpd, via WSGI interface.
 
+### Install required Python packages
+
+You can use requirements.txt, so simply run following.
+
+```
+$ pip install -r requirements.txt
+```
+
 ### Prepare Database
 
 This depends on functionallity of PostgreSQL 11+,  
@@ -204,8 +212,8 @@ Same as update procedure mentioned below.
 Simply run with following command.
 
 ```
-$ python3 master_update.py
+$ python3 update_master.py
 ```
 
-`master_update.py` will insert new commits to your database.  
+`update_master.py` will insert new commits to your database.  
 Running with cron is recommended.
