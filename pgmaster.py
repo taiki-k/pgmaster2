@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020-2021 Kondo Taiki
+# Copyright (C) 2020-2022 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -51,9 +51,9 @@ def root():
     with conn.cursor() as cursor:
       cursor.execute(
         u"""SELECT
-          distinct project
+          project
         FROM
-          branch_info;
+          project_info;
       """)
 
       rows = cursor.fetchall()
@@ -89,9 +89,11 @@ def project(project):
       cursor.execute(u"""SELECT
         branch
       FROM
-        branch_info
+        repository_info
       WHERE
-        project = %s;""",
+        project = %s
+      ORDER BY
+        branch;""",
       [project]
       )
 
@@ -652,19 +654,28 @@ def search_backpatch(project, branch, commitid):
           i.updatetime,
           a.branch
         FROM
-          _branch a
-          JOIN _branch b ON (a.project = b.project)
+          _commitinfo c1 JOIN _commitinfo c2
+              ON (c1.project = c2.project AND c1.author = c2.author AND c1.commitlog = c2.commitlog)
+          JOIN _branch a ON (c2.project = a.project AND c2.commitid = a.commitid)
           LEFT JOIN _investigation i ON (a.project = i.project AND a.branch = i.branch AND a.commitid = i.commitid)
         WHERE
-          a.commitdate BETWEEN b.commitdate-'5 minutes'::interval and b.commitdate+'5 minutes'::interval AND
-          b.project = %s AND
-          b.branch = %s AND
-          b.commitid = %s
+          c1.project = %s AND
+          c1.commitid = %s
+        GROUP BY
+          a.commitid,
+          a.scommitid,
+          a.commitdate,
+          a.commitdate_l,
+          a.timezone_int,
+          i.updatetime,
+          a.branch
+        HAVING
+          a.commitdate BETWEEN min(a.commitdate) AND min(a.commitdate+'1 days'::interval)
         ORDER BY
-          a.commitdate DESC, a.scommitid
+          a.commitdate DESC, a.branch
         OFFSET %s
         LIMIT %s""",
-        [project, branch, commitid, (page - 1) * num, num]
+        [project, commitid, (page - 1) * num, num]
       )
 
       rows = cursor.fetchall()

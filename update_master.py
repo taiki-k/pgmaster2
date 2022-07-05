@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Kondo Taiki
+# Copyright (C) 2020-2022 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -53,7 +53,6 @@ def update_repo(param):
 
   fd = None
   conn = pg_conn.connect()
-  conn.autocommit = True
   print(u"LOG[%d] <%s>: Connect to database for %s" % (num, get_now(), project))
 
   try:
@@ -67,7 +66,7 @@ def update_repo(param):
       cursor.execute(u"""SELECT
           branch
         FROM
-          branch_info
+          repository_info
         WHERE
           project = %s""",
         [project]
@@ -134,10 +133,23 @@ def update_repo(param):
                 (%s, %s, %s, %s, %s, %s, %s)""",
               [project, branch, commit_id, s_commit_id, commit_date, commit_date_local, time_zone]
             )
+
+            # There is NO "branch" column on _commitinfo table,
+            # because we want to avoid duplicate records of large text data like commit message.
+            # This is why only this SQL has "ON CONFLICT ... DO NOTHING" clause.
+            cursor.execute(u"""INSERT INTO
+                _commitinfo (project, commitid, author, committer, commitlog)
+              VALUES
+                (%s, %s, %s, %s, %s)
+              ON CONFLICT ON CONSTRAINT _commitinfo_pkey DO NOTHING""",
+              [project, commit_id, record.author.name, record.committer.name, record.message]
+            )
+            conn.commit()
             print(u"LOG[%d] <%s>: Commit '%s' inserted." % (num, get_now(), commit_id))
           except psycopg2.Error as e:
+            conn.rollback()
             if e.pgcode == '23505':
-              # Unique constraint violation
+              # Unique constraint violation on _branch (partitioned) table.
               # This is expected because trying to insert from 1 day BEFORE last inserted.
               # Therefore, simply ignoring.
               print(u"INFO[%d] <%s>: Commit '%s' already exists. Skip." % (num, get_now(), commit_id))
@@ -145,6 +157,7 @@ def update_repo(param):
               print(u"ERROR[%d] <%s>: %s ERRORCODE: %s" % (num, get_now(), e.pgerror, e.pgcode))
               raise
           except Exception as e:
+            conn.rollback()
             raise
         # end of for records
       # end of with
@@ -184,9 +197,9 @@ def main():
     print("LOG[0] <%s>: connect for getting project informations." % get_now())
     with conn.cursor() as cursor:
       cursor.execute(u"""SELECT
-        distinct project
+        project
       FROM
-        branch_info"""
+        project_info"""
       )
       rows.extend([r for (r,) in cursor.fetchall()])
   except Exception as e:
