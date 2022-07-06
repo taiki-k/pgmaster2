@@ -23,6 +23,7 @@ import os
 import psycopg2
 import datetime, time
 import fcntl
+import argparse
 import configparser
 import traceback
 import concurrent.futures
@@ -48,8 +49,9 @@ def update_repo(param):
   param : tuple of following
     project : project name
     num     : number of this worker
+    force   : DO force importing
   """
-  (project, num) = param
+  (project, num, force) = param
 
   fd = None
   conn = pg_conn.connect()
@@ -81,19 +83,22 @@ def update_repo(param):
     for branch in branches:
       print(u"INFO[%d] <%s>: Start updating \"%s\"." % (num, get_now(), branch))
       since = None
-      with conn.cursor() as cursor:
-        # To avoid commit slipped out,
-        # start point is set to 1 day before the last commit date.
-        cursor.execute(u"""SELECT
-            (max(commitdate) - interval '1 day')::date
-          FROM
-            _branch
-          WHERE
-            project = %s and branch = %s
-          LIMIT 1""",
-          [project, branch]
-        )
-        (since,) = cursor.fetchone()
+      # When doing force importing, all commits are processed,
+      # so no need to calculate start point in this situation.
+      if not force:
+        with conn.cursor() as cursor:
+          # To avoid commit slipped out,
+          # start point is set to 1 day before the last commit date.
+          cursor.execute(u"""SELECT
+              (max(commitdate) - interval '1 day')::date
+            FROM
+              _branch
+            WHERE
+              project = %s and branch = %s
+            LIMIT 1""",
+            [project, branch]
+          )
+          (since,) = cursor.fetchone()
 
       # GitPython does NOT support "--no-merges" option,
       # use "--max-parents=1" instead.
@@ -127,10 +132,15 @@ def update_repo(param):
           )
 
           try:
-            cursor.execute(u"""INSERT INTO
+            dml_insert_branch = u"""INSERT INTO
                 _branch (project, branch, commitid, scommitid, commitdate, commitdate_l, timezone_int)
               VALUES
-                (%s, %s, %s, %s, %s, %s, %s)""",
+                (%s, %s, %s, %s, %s, %s, %s)"""
+            if force:
+              # To simply skip when record is already existed, add "ON CONFLICT ... DO NOTHING" clause.
+              dml_insert_branch += u' ON CONFLICT ON CONSTRAINT _branch_pkey DO NOTHING'
+
+            cursor.execute(dml_insert_branch,
               [project, branch, commit_id, s_commit_id, commit_date, commit_date_local, time_zone]
             )
 
@@ -144,6 +154,9 @@ def update_repo(param):
               ON CONFLICT ON CONSTRAINT _commitinfo_pkey DO NOTHING""",
               [project, commit_id, record.author.name, record.committer.name, record.message]
             )
+
+            # TODO: Record commit-ids of "child" here.
+
             conn.commit()
             print(u"LOG[%d] <%s>: Commit '%s' inserted." % (num, get_now(), commit_id))
           except psycopg2.Error as e:
@@ -187,10 +200,14 @@ def update_repo(param):
       fd.close()
     pg_conn.close(conn)
 
-def main():
+def main(force: bool = False):
   """
   Main
   """
+
+  if force:
+    print("LOG[0] <%s>: Specified force importing." % get_now())
+
   conn = pg_conn.connect()
   rows = []
   try:
@@ -212,14 +229,20 @@ def main():
   if len(rows) <= 0:
     pass
   elif len(rows) == 1:
-    update_repo((rows[0], 1))
+    update_repo((rows[0], 1, force))
   else:
     with concurrent.futures.ProcessPoolExecutor(max_workers = len(rows)) as executor:
-      params = map(lambda n : (rows[n], n + 1), range(0, len(rows)))
+      params = map(lambda n : (rows[n], n + 1, force), range(0, len(rows)))
       executor.map(update_repo, params)
 
 if __name__ == "__main__":
   print("LOG[0] <%s>: Start to update repository information from <%s>" % (get_now(),get_now(True)))
+
+  # Parse arguments.
+  arg_parser = argparse.ArgumentParser()
+  arg_parser.add_argument("-f", "--force", action = 'store_true', help = u"Force import. (This may take a long time)")
+  args = arg_parser.parse_args()
+
   # Read configuration file
   config_ini = configparser.ConfigParser()
   config_ini.read('pgmaster.ini', encoding = 'utf-8')
@@ -235,6 +258,6 @@ if __name__ == "__main__":
     pooling = 0 # Ignore setting
   )
 
-  main()
+  main(args.force)
 
   print("LOG[0] <%s>: All have done. <%s>" % (get_now(), get_now(True)))
