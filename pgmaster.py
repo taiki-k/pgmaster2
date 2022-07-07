@@ -670,7 +670,7 @@ def search_backpatch(project, branch, commitid):
           i.updatetime,
           a.branch
         HAVING
-          a.commitdate BETWEEN min(a.commitdate) AND min(a.commitdate+'1 days'::interval)
+          a.commitdate BETWEEN min(a.commitdate) AND min(a.commitdate + interval '1 day')
         ORDER BY
           a.commitdate DESC, a.branch
         OFFSET %s
