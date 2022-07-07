@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2022 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -18,12 +18,19 @@
 */
 
 --# uninstall each tables.
-DROP TABLE IF EXISTS branch_info;
+DROP TABLE IF EXISTS project_info;
+DROP TABLE IF EXISTS repository_info;
 DROP TABLE IF EXISTS _branch CASCADE;
 DROP TABLE IF EXISTS _investige CASCADE;
-DROP TABLE IF EXISTS relatedcommit;
+DROP TABLE IF EXISTS _commitinfo CASCADE;
 
-CREATE TABLE IF NOT EXISTS branch_info
+CREATE TABLE IF NOT EXISTS project_info
+(
+  project          text PRIMARY KEY,
+  repo_browse_url  text
+);
+
+ CREATE TABLE IF NOT EXISTS repository_info
 (
   project  text NOT NULL,
   branch   text NOT NULL,
@@ -46,6 +53,20 @@ PARTITION BY list ( project );
 
 CREATE INDEX _branch_commitdate_brin ON _branch USING brin(commitdate);
 CREATE INDEX _branch_commitid_hash ON _branch USING hash(commitid);
+
+CREATE TABLE IF NOT EXISTS _commitinfo
+(
+  project      text        NOT NULL,
+  commitid     text        NOT NULL,
+  updatetime   timestamptz NOT NULL default now(),
+  author       text        NOT NULL,
+  committer    text        NOT NULL,
+  commitlog    text        NOT NULL,
+  PRIMARY KEY(project, commitid)
+)
+PARTITION BY list ( project );
+
+CREATE INDEX _commitinfo_commitlog_hash ON _commitinfo USING hash(commitlog);
 
 CREATE TABLE IF NOT EXISTS _investigation
 (
