@@ -71,7 +71,19 @@
           <v-col
             cols="6"
           >
+{% if commit.initial %}
+             <v-alert
+              dense
+              elevation="10"
+              prominent
+              type="warning"
+            >
+              Since this is the initial commit, the diff is worthless.<br />
+              Please look at the files directly in the repository browser.
+            </v-alert>
+{% else %}
             <!-- Padding -->
+{% endif %}
           </v-col>
           <v-col
             cols="6"

@@ -411,7 +411,14 @@ def investigate(project, branch, commitid):
         raise FileNotFoundError
 
       commit = repo.commit(commitid)
-      p_commit = commit.parents[0]
+      if len(commit.parents) > 0:
+        p_commit = commit.parents[0]
+        initial_commit = False
+      else:
+        # This is the magic ID of "empty tree". (not commit id)
+        # See https://stackoverflow.com/questions/40883798/how-to-get-git-diff-of-the-first-commit
+        p_commit = repo.tree('4b825dc642cb6eb9a060e54bf8d69288fbee4904')
+        initial_commit = True
       c_info = {
         'id'         : commitid,
         'sid'        : c[0],
@@ -422,6 +429,7 @@ def investigate(project, branch, commitid):
         'message'    : make_html_message(commit.message),
         'author'     : html.escape(commit.author.name + ' <' + commit.author.email + '>'),
         'diffs'      : make_patch(p_commit, commit),
+        'initial'    : initial_commit,
         'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
         'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
         'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
