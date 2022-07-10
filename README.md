@@ -4,7 +4,7 @@ Platform for investigation of each commits in git repositories, especially Postg
 
 ## Copyright and License
 
-Copyright (C) 2020-2021 Kondo Taiki
+Copyright (C) 2020-2022 Kondo Taiki
 
 This software is licensed under the GPL v3.  
 See `COPYING` file for more information.
@@ -39,7 +39,7 @@ then you have to use PostgreSQL 11+ database.
 
 #### Create Database
 
-First, you have to create new database like following.
+First, you have to create a new database like following.
 
 ```
 $ createdb pgmaster
@@ -62,7 +62,7 @@ NOTE: "pgmaster2" does NOT use `CREATE TABLE` in this time, but will use in the 
 
 #### Create Tables
 
-The DDL is prepared in "sql/ssl.sql".  
+The DDL is prepared in "sql/ddl.sql".  
 Simply run with following command.
 
 ```
@@ -162,6 +162,8 @@ This is a sample to manage *where* project cloned above.
 => CREATE TABLE IF NOT EXISTS "_branch_where" PARTITION OF _branch FOR VALUES IN ('where') PARTITION BY list ( branch );
 
 => CREATE TABLE IF NOT EXISTS "_invest_where" PARTITION OF _investigation FOR VALUES IN ('where') PARTITION BY list ( branch );
+
+=> CREATE TABLE IF NOT EXISTS "_commitinfo_where" PARTITION OF _commitifo FOR VALUES IN ('where');
 ```
 
 Create partitiond (grand-child) table as following.  
@@ -174,7 +176,7 @@ This is a sample to manage *main* branch in *where* project cloned above.
 ```
 
 In this time, "pgmaster2" will manage data through "ROOT" tables  
-(e.g. `_branch` and `_investigation`) of partition,  
+(e.g. `_branch`, `_investigation`, and `_commitinfo`) of partition,  
 therefore you can use any names for child and grand-child tables.
 
 But, you **must note** that we plan to name these management tables  
@@ -192,6 +194,10 @@ _investigation
 +- _invest_<project name>
    |
    +- invest_<project name>_<branch name>
+
+_commitinfo
+|
++- commitinfo_<project name>
 ```
 
 #### Insert project & branch information
@@ -200,7 +206,8 @@ You have to insert project and branch information to investigate.
 This is a sample to manage *main* branch of *where* project cloned above.
 
 ```sql
-=> INSERT INTO branch_info VALUES ('where', 'main');
+=> INSERT INTO project_info (project) VALUES ('where');
+=> INSERT INTO repository_info VALUES ('where', 'main');
 ```
 
 #### Insert commit information
