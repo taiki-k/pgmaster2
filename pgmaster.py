@@ -358,12 +358,7 @@ def investigate(project, branch, commitid):
   # end of function
 
   urls = {
-    'backpatch' : url_for(
-      'search_backpatch',
-      project = project,
-      branch = branch,
-      commitid = commitid
-    )
+    'repo_browser' : None
   }
 
   fd = None
@@ -433,13 +428,7 @@ def investigate(project, branch, commitid):
         'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
         'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
         'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
-        'keywords'   : c[7] if c[7] is not None else [],
-        'invest_url' : url_for(
-          'webapi_v1.investigate_modify',
-          project = project,
-          branch = branch,
-          commitid = commitid
-        )
+        'keywords'   : c[7] if c[7] is not None else []
       }
     # End of "with conn.cursor()"
 
@@ -464,6 +453,20 @@ def investigate(project, branch, commitid):
 
       c = cursor.fetchone()
       keywords.extend(c[0] if c[0] is not None else [])
+
+    # Get Git Repository Browser URL
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+          repo_browse_url
+        FROM
+          project_info
+        WHERE
+          project = %s""",
+        [project]
+      )
+
+      c = cursor.fetchone()
+      urls['repo_browser'] = c[0].replace(u'%%COMMITID%%', commitid, 1) if c[0] is not None else None
 
   except FileNotFoundError as e:
     abort(404)
