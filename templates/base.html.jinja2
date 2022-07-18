@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2022 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -34,7 +34,7 @@
     <v-app-bar
       app
       dark
-      color="indigo"
+      color="primary"
     >
       <v-toolbar-title>pgmaster2{{ self.title() }}</v-toolbar-title>
     </v-app-bar>
@@ -67,7 +67,16 @@
 <script>
   new Vue({
     el: '#app',
-    vuetify: new Vuetify(),
+    vuetify: new Vuetify({
+      theme: {
+        themes: {
+          light: {
+            primary:   '#336791',
+            secondary: '#64a3c7'
+          }
+        }
+      }
+    }),
     data: {
       nav_items: [
         {

@@ -358,12 +358,7 @@ def investigate(project, branch, commitid):
   # end of function
 
   urls = {
-    'backpatch' : url_for(
-      'search_backpatch',
-      project = project,
-      branch = branch,
-      commitid = commitid
-    )
+    'repo_browser' : None
   }
 
   fd = None
@@ -411,7 +406,14 @@ def investigate(project, branch, commitid):
         raise FileNotFoundError
 
       commit = repo.commit(commitid)
-      p_commit = commit.parents[0]
+      if len(commit.parents) > 0:
+        p_commit = commit.parents[0]
+        initial_commit = False
+      else:
+        # This is the magic ID of "empty tree". (not commit id)
+        # See https://stackoverflow.com/questions/40883798/how-to-get-git-diff-of-the-first-commit
+        p_commit = repo.tree('4b825dc642cb6eb9a060e54bf8d69288fbee4904')
+        initial_commit = True
       c_info = {
         'id'         : commitid,
         'sid'        : c[0],
@@ -422,16 +424,11 @@ def investigate(project, branch, commitid):
         'message'    : make_html_message(commit.message),
         'author'     : html.escape(commit.author.name + ' <' + commit.author.email + '>'),
         'diffs'      : make_patch(p_commit, commit),
+        'initial'    : initial_commit,
         'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
         'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
         'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
-        'keywords'   : c[7] if c[7] is not None else [],
-        'invest_url' : url_for(
-          'webapi_v1.investigate_modify',
-          project = project,
-          branch = branch,
-          commitid = commitid
-        )
+        'keywords'   : c[7] if c[7] is not None else []
       }
     # End of "with conn.cursor()"
 
@@ -456,6 +453,20 @@ def investigate(project, branch, commitid):
 
       c = cursor.fetchone()
       keywords.extend(c[0] if c[0] is not None else [])
+
+    # Get Git Repository Browser URL
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+          repo_browse_url
+        FROM
+          project_info
+        WHERE
+          project = %s""",
+        [project]
+      )
+
+      c = cursor.fetchone()
+      urls['repo_browser'] = c[0].replace(u'%%COMMITID%%', commitid, 1) if c[0] is not None else None
 
   except FileNotFoundError as e:
     abort(404)

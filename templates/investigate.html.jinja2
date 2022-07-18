@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2021 Kondo Taiki
+  Copyright (C) 2020-2022 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -33,24 +33,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
 <script src="/static/vue-highlightjs.js"></script>
-<!--
-<div style="margin : 2%;">
-  <p>Repository Browser Link</p>
-  <table>
-    <tr>
-      <td>abc</td>
-      <td><a>Full</a></td>
-      <td><a>Diff</a></td>
-    <tr>
-  </table>
-</div>
--->
 <div id="app">
   <v-app>
     <v-app-bar
       app
       dark
-      color="indigo"
+      color="primary"
     >
       <v-toolbar-title>pgmaster2 Investigate: {{ commit.sid }}</v-toolbar-title>
     </v-app-bar>
@@ -69,9 +57,49 @@
         </v-row>
         <v-row>
           <v-col
-            cols="6"
+            cols="3"
           >
             <!-- Padding -->
+          </v-col>
+          <v-col
+            cols="2"
+          >
+            <v-btn
+              color="primary"
+              dark
+{% if urls.repo_browser %}
+              href="{{ urls.repo_browser }}"
+{% else %}
+              disabled
+{% endif %}
+            >
+              <v-icon>mdi-file-link</v-icon>
+              View Files
+            </v-btn>
+          </v-col>
+          <v-col
+            cols="7"
+          >
+            <!-- Padding -->
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
+            cols="6"
+          >
+{% if commit.initial %}
+             <v-alert
+              dense
+              elevation="10"
+              prominent
+              type="warning"
+            >
+              Since this is the initial commit, the diff is worthless.<br />
+              Please look at the files directly in {% if urls.repo_browser %}<a href="{{ urls.repo_browser }}">{% endif %}the repository browser{% if urls.repo_browser %}</a>{% endif %}.
+            </v-alert>
+{% else %}
+            <!-- Padding -->
+{% endif %}
           </v-col>
           <v-col
             cols="6"
@@ -247,7 +275,7 @@
               cols="1"
             >
               <v-btn
-                href="{{ urls.backpatch }}"
+                href="{{ url_for('search_backpatch', project = project, branch = branch, commitid = commit.id) }}"
               >
                 <v-icon>mdi-magnify</v-icon>
                 Search Back-patch
@@ -266,7 +294,10 @@
                 dark
                 @click="modify"
                 :loading="btnLoading"
-              >Submit</v-btn>
+              >
+                <v-icon>mdi-send</v-icon>
+                Submit
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -277,10 +308,19 @@
 <script>
   new Vue({
     el: '#app',
-    vuetify: new Vuetify(),
+    vuetify: new Vuetify({
+      theme: {
+        themes: {
+          light: {
+            primary:   '#336791',
+            secondary: '#64a3c7'
+          }
+        }
+      }
+    }),
     data: {
       formValid: true,
-      btnColor: 'indigo',
+      btnColor: 'primary',
       btnLoading: false,
       investSNote: "{{ commit.snote }}",
       investNote: "{{ commit.note }}",
@@ -327,7 +367,7 @@
               "{{ url_for('webapi_v1.investigate_modify', project = project, branch = branch, commitid = commit.id) }}",
               send_data
             );
-            this.btnColor = 'indigo';
+            this.btnColor = 'primary';
           }
           catch (error) {
             this.btnColor = 'error';
