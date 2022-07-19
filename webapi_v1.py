@@ -71,7 +71,8 @@ def investigate_modify(project, branch, commitid):
     if len(form_data['snote']) <= 0:
       raise ValueError
     else:
-      pass
+      # Remove all of CR and LF.
+      form_data['snote'] = u''.join(form_data['snote'].splitlines())
 
     if len(form_data['note']) <= 0:
       raise ValueError
