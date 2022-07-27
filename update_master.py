@@ -30,6 +30,7 @@ import concurrent.futures
 from git import *
 
 import pg_connection
+import pgmaster_utils
 
 pg_conn = None
 
@@ -155,7 +156,28 @@ def update_repo(param):
               [project, commit_id, record.author.name, record.committer.name, record.message]
             )
 
-            # TODO: Record commit-ids of "child" here.
+            # Record commit-ids of "child" here.
+            parents = pgmaster_utils.git_ancestor(record)
+            if parents is not None:
+              for parent in parents:
+                children_old = pgmaster_utils.git_children(cursor, project, parent)
+                children = [commit_id]
+                children.extend(children_old if children_old is not None else [])
+                if set(children) != set(children_old if children_old is not None else []):
+                  # Need to update
+                  cursor.execute(u"""UPDATE
+                      _commitinfo
+                    SET
+                      children = %s,
+                      updatetime = now()
+                    WHERE
+                      project = %s and
+                      commitid = %s""",
+                    [list(set(children)), project, parent]
+                  )
+                  print(u"LOG[%d] <%s>: Commit '%s' updated for child '%s'." % (num, get_now(), parent, commit_id))
+                else:
+                  print(u"INFO[%d] <%s>: Commit '%s' is not needed to update. Skip" % (num, get_now(), parent))
 
             conn.commit()
             print(u"LOG[%d] <%s>: Commit '%s' inserted." % (num, get_now(), commit_id))

@@ -30,6 +30,7 @@ from git import *
 from flask import *
 
 import pg_connection
+import pgmaster_utils
 import webapi_v1
 
 app = Flask(__name__)
@@ -298,6 +299,7 @@ def investigate(project, branch, commitid):
       diffs.append(html.escape(patch_str))
 
     return diffs
+  # end of nested (internal) function
   
   def make_html_message(message):
     import re
@@ -355,10 +357,31 @@ def investigate(project, branch, commitid):
 
     result = u'<br>\n'.join(lines)
     return result
-  # end of function
+  # end of nested (internal) function
+
+  def get_short_commitid(repo, commitid_list):
+    git_cmd = repo.git
+
+    if commitid_list is None:
+      return None
+
+    result = []
+    for commit_id in commitid_list:
+      s_commit_id = git_cmd.rev_parse(commit_id, short=7)
+      result.extend([
+        {
+          'id'  : commit_id,
+          'sid' : s_commit_id
+        }
+      ])
+
+    return result
+  # end of nested (internal) function
 
   urls = {
-    'repo_browser' : None
+    'repo_browser' : None,
+    'parents'      : None,
+    'children'     : None
   }
 
   fd = None
@@ -403,9 +426,18 @@ def investigate(project, branch, commitid):
 
       c = cursor.fetchone()
       if c is None:
-        raise FileNotFoundError
+        # Fallback to project-wide search.
+        return redirect(
+          url_for(
+            'search_commit',
+            project = project,
+            commitid = commitid
+          )
+        )
 
       commit = repo.commit(commitid)
+      urls['parents']  = get_short_commitid(repo, pgmaster_utils.git_ancestor(commit))
+      urls['children'] = get_short_commitid(repo, pgmaster_utils.git_children(cursor, project, commitid))
       if len(commit.parents) > 0:
         p_commit = commit.parents[0]
         initial_commit = False

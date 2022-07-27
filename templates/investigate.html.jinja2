@@ -59,7 +59,66 @@
           <v-col
             cols="3"
           >
-            <!-- Padding -->
+            <v-menu
+              offset-y
+{% if not urls.parents %}
+              disabled
+{% endif %}
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  color="secondary"
+{% if not urls.parents %}
+                  disabled
+{% endif %}
+                >
+                  <v-icon>mdi-page-previous-outline</v-icon>
+                  Parent
+                </v-btn>
+              </template>
+              <v-list>
+{% if urls.parents %}{% for parent in urls.parents %}
+                <v-list-item
+                  href="{{ url_for('investigate', project = project, branch = branch, commitid = parent.id) }}"
+                >
+                  <v-icon>mdi-source-merge</v-icon>
+                  <v-list-title>{{ parent.sid }}</v-list-title>
+                </v-list-item>
+{% endfor %}{% endif %}
+              </v-list>
+            </v-menu>
+            <v-menu
+              offset-y
+{% if not urls.children %}
+              disabled
+{% endif %}
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  color="secondary"
+{% if not urls.children %}
+                  disabled
+{% endif %}
+                >
+                  <v-icon>mdi-page-next-outline</v-icon>
+                  Child
+                </v-btn>
+              </template>
+              <v-list>
+{% if urls.children %}{% for child in urls.children %}
+                <v-list-item
+                  href="{{ url_for('investigate', project = project, branch = branch, commitid = child.id) }}"
+                >
+                  <v-icon>mdi-source-fork</v-icon>
+                  <v-list-title>{{ child.sid }}</v-list-title>
+                </v-list-item>
+{% endfor %}{% endif %}
+              </v-list>
+            </v-menu>
           </v-col>
           <v-col
             cols="2"
