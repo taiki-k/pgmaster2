@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS _commitinfo
   author       text        NOT NULL,
   committer    text        NOT NULL,
   commitlog    text        NOT NULL,
+  children     text[],
   PRIMARY KEY(project, commitid)
 )
 PARTITION BY list ( project );
