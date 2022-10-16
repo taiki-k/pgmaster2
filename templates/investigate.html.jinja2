@@ -39,12 +39,13 @@
       app
       dark
       color="primary"
+      v-once
     >
       <v-toolbar-title>pgmaster2 Investigate: {{ commit.sid }}</v-toolbar-title>
     </v-app-bar>
     <v-main>
       <v-container>
-        <v-row>
+        <v-row v-once>
           <v-col>
             <v-breadcrumbs
               :items="nav_items"
@@ -55,7 +56,7 @@
             </v-breadcrumbs>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row v-once>
           <v-col
             cols="3"
           >
@@ -142,7 +143,7 @@
             <!-- Padding -->
           </v-col>
         </v-row>
-        <v-row>
+        <v-row v-once>
           <v-col
             cols="6"
           >
@@ -180,7 +181,7 @@
           v-mode="formValid"
           @submit.prevent="modify"
         >
-          <v-row>
+          <v-row v-once>
             <v-col
               cols="6"
             >
@@ -211,7 +212,7 @@
               </v-textarea>
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-once>
             <v-col
               cols="6"
             >
@@ -239,7 +240,7 @@
               <!-- Padding -->
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-once>
             <v-col
               cols="6"
             >
@@ -264,11 +265,12 @@
                 height="600"
                 required
                 clearable
-                outlined>
+                outlined
+              >
               </v-textarea>
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-once>
             <v-col
               cols="6"
             >
@@ -298,11 +300,12 @@
                 height="600"
                 required
                 clearable
-                outlined>
+                outlined
+              >
               </v-textarea>
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-once>
             <v-col
               cols="6"
             >
@@ -327,11 +330,13 @@
           <v-row>
             <v-col
               cols="6"
+              v-once
             >
               <!-- Padding -->
             </v-col>
             <v-col
               cols="1"
+              v-once
             >
               <v-btn
                 href="{{ url_for('search_backpatch', project = project, branch = branch, commitid = commit.id) }}"
@@ -342,6 +347,7 @@
             </v-col>
             <v-col
               cols="4"
+              v-once
             >
               <!-- Padding -->
             </v-col>
@@ -364,7 +370,8 @@
     </v-main>
   </v-app>
 </div>
-<script>
+<script>{% if config['DEBUG'] %}
+  Vue.config.devtools = true;{% endif %}
   new Vue({
     el: '#app',
     vuetify: new Vuetify({

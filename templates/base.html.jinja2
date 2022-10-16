@@ -64,7 +64,8 @@
     </v-main>
   </v-app>
 </div>
-<script>
+<script>{% if config['DEBUG'] %}
+  Vue.config.devtools = true;{% endif %}
   new Vue({
     el: '#app',
     vuetify: new Vuetify({
