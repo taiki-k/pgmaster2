@@ -13,11 +13,11 @@ If you don't recieve it, see [the GNU web site](http://www.gnu.org/licenses/).
 
 ### Exceptions
 
-This software contains (and uses) "vue-highlightjs" related code,
-and it is licensed under the MIT license.
+This software contains (and uses) "Highlight.js plugin for Vue.js",
+and it is licensed under the BSD 3-Clause license.
 
-For more information about "vue-highlightjs",
-see https://github.com/metachris/vue-highlightjs.
+For more information about "Highlight.js plugin for Vue.js",
+see https://github.com/highlightjs/vue-plugin.
 
 ## How to Setup
 
