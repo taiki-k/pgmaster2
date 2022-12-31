@@ -22,13 +22,13 @@
 <meta charset="UTF-8">
 <title>pgmaster2{% block title %}{% endblock %}</title>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.css" integrity="sha512-ALDCcjE3/qN1laPSK0zKyQEXyE1oE1RPAknXgls51YXMHbRiny+jb/GZ1466Xm5Zg8cR5uN8PA2ZsdlPnKnzCA==" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.9.55/css/materialdesignicons.min.css" integrity="sha512-vIgFb4o1CL8iMGoIF7cYiEVFrel13k/BkTGvs0hGfVnlbV6XjAA0M0oEHdWqGdAVRTDID3vIZPOHmKdrMAUChA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.css" integrity="sha512-NRfXz/kaXFChyyQ0KS2gW679sdfCYhKxwhqqGjaZMpDnWPhG0/OViu6TKkqtjwueBzZA4RpuhLY39U8NkHwZ3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.0.96/css/materialdesignicons.min.css" integrity="sha512-fXnjLwoVZ01NUqS/7G5kAnhXNXat6v7e3M9PhoMHOTARUMCaf5qNO84r5x9AFf5HDzm3rEZD8sb/n6dZ19SzFA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js" integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js" integrity="sha512-36v63iCIica4vWLH2YSbz030v65pMUMXL5PXJCJ8+vSF99ME+lJWauL8am5LB39m3SaBinFTzgW0n87INJYo5g==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.js" integrity="sha512-RPnZ48qBYcvQ+7erC7Weu+EzbUmbZf8t7HQUeryQmr09ANWgAOVxkFWqIanp7GO7roCOsuxTO2par6iOF1mE3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <div id="app">
   <v-app>
     <v-app-bar
@@ -64,7 +64,8 @@
     </v-main>
   </v-app>
 </div>
-<script>{% if config['DEBUG'] %}
+<script>
+<!--{% if config['DEBUG'] %}
   Vue.config.devtools = true;{% endif %}
   new Vue({
     el: '#app',
@@ -88,6 +89,7 @@
       ],{% block extra_data %}{% endblock %}
     }
   });
+-->
 </script>
 </body>
 </html>

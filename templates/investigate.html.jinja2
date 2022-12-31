@@ -21,18 +21,18 @@
 <head>
 <meta charset="UTF-8">
 <title>pgmaster2 {{ project }} - {{ branch }} - {{ commit.sid }}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/stackoverflow-light.min.css" integrity="sha512-cG1IdFxqipi3gqLmksLtuk13C+hBa57a6zpWxMeoY3Q9O6ooFxq50DayCdm0QrDgZjMUn23z/0PMZlgft7Yp5Q==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/stackoverflow-light.min.css" integrity="sha512-RDtnAhiPytLVV3AwzHkGVMVI4szjtSjxxyhDaH3gqdHPIw5qwQld1MVGuMu1EYoof+CaEccrO3zUVb13hQFU/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.css" integrity="sha512-ALDCcjE3/qN1laPSK0zKyQEXyE1oE1RPAknXgls51YXMHbRiny+jb/GZ1466Xm5Zg8cR5uN8PA2ZsdlPnKnzCA==" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.9.55/css/materialdesignicons.min.css" integrity="sha512-vIgFb4o1CL8iMGoIF7cYiEVFrel13k/BkTGvs0hGfVnlbV6XjAA0M0oEHdWqGdAVRTDID3vIZPOHmKdrMAUChA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.css" integrity="sha512-NRfXz/kaXFChyyQ0KS2gW679sdfCYhKxwhqqGjaZMpDnWPhG0/OViu6TKkqtjwueBzZA4RpuhLY39U8NkHwZ3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.0.96/css/materialdesignicons.min.css" integrity="sha512-fXnjLwoVZ01NUqS/7G5kAnhXNXat6v7e3M9PhoMHOTARUMCaf5qNO84r5x9AFf5HDzm3rEZD8sb/n6dZ19SzFA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js" integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.4.11/vuetify.min.js" integrity="sha512-36v63iCIica4vWLH2YSbz030v65pMUMXL5PXJCJ8+vSF99ME+lJWauL8am5LB39m3SaBinFTzgW0n87INJYo5g==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
-<script src="/static/vue-highlightjs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.js" integrity="sha512-RPnZ48qBYcvQ+7erC7Weu+EzbUmbZf8t7HQUeryQmr09ANWgAOVxkFWqIanp7GO7roCOsuxTO2par6iOF1mE3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{{ url_for('static', filename='highlightjs-vue.min.js') }}"></script>
 <div id="app">
   <v-app>
     <v-app-bar
@@ -278,17 +278,15 @@
                 class="overflow-x-auto overflow-y-auto"
                 style="height: 600px;"
               >
-{% for diff in commit.diffs %}
                 <v-row
+                  v-for="(code_diff,i) in diffs"
+                  :key="i"
                   dense
                 >
                   <v-col>
-                    <pre
-                      v-highlightjs
-                    ><code class="lang-diff" style="overflow-x: visible" v-pre>{{ diff }}</code></pre>
+                    <highlightjs language="diff" :code="code_diff" style="overflow-x: visible" />
                   </v-col>
                 </v-row>
-{% endfor %}
               </v-container>
             </v-col>
             <v-col
@@ -370,8 +368,10 @@
     </v-main>
   </v-app>
 </div>
-<script>{% if config['DEBUG'] %}
+<script>
+<!--{% if config['DEBUG'] %}
   Vue.config.devtools = true;{% endif %}
+  Vue.use(hljsVuePlugin);
   new Vue({
     el: '#app',
     vuetify: new Vuetify({
@@ -386,6 +386,9 @@
     }),
     data: {
       formValid: true,
+      diffs: [
+{% for diff in commit.diffs %}        "{{ diff }}",
+{% endfor %}      ],
       btnColor: 'primary',
       btnLoading: false,
       investSNote: "{{ commit.snote }}",
@@ -445,6 +448,7 @@
       }
     }
   });
+-->
 </script>
 </body>
 </html>

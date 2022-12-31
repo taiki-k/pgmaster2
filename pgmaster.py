@@ -279,24 +279,40 @@ def investigate(project, branch, commitid):
     branch  : branch name
     commitid: commitid
   """
+  # We have to replace from following chars to escaped one,
+  # because these will be inserted as JSON string.
+  trans_escaped = str.maketrans({
+      '"'  : r'\"',
+      '\'' : r'\'',
+      '\\' : r'\\',
+      '\n' : r'\n',
+      '\r' : r''
+    })
 
   def make_patch(src, dst):
     diffs = []
     for d in src.diff(dst, create_patch = True):
       a_path = 'a/%s' % d.a_rawpath.decode('utf-8') if d.a_rawpath is not None else '/dev/null'
       b_path = 'b/%s' % d.b_rawpath.decode('utf-8') if d.b_rawpath is not None else '/dev/null'
+
+      # Sanitize diff
+      # This part will be inserted as JSON string.
+      code_diff = d.diff.decode('utf-8').translate(trans_escaped)
+
+      # Real LF are not accepted in JSON string.
+      # We use "\n" to tell LF point to browsers.
       patch_str = (
-        u'--- %s\n'
-        u'+++ %s\n'
-        u'\n'
+        u'--- %s\\n'
+        u'+++ %s\\n'
+        u'\\n'
         u'%s'
       ) % (
         a_path,
         b_path,
-        d.diff.decode('utf-8')
+        u'\\n'.join(code_diff.splitlines())
       )
-      # Append Sanitized strings
-      diffs.append(html.escape(patch_str))
+
+      diffs.append(patch_str)
 
     return diffs
   # end of nested (internal) function
@@ -386,15 +402,6 @@ def investigate(project, branch, commitid):
 
   fd = None
   conn = pg_conn.connect()
-
-  # We have to replace from following chars to escaped one,
-  # because these will be inserted as JSON string.
-  trans_escaped = str.maketrans({
-      '"' : r'\"',
-      '\\' : r'\\',
-      '\n' : r'\n',
-      '\r' : r''
-    })
 
   try:
     # Connect to git repository
