@@ -64,7 +64,8 @@
     </v-main>
   </v-app>
 </div>
-<script>{% if config['DEBUG'] %}
+<script>
+<!--{% if config['DEBUG'] %}
   Vue.config.devtools = true;{% endif %}
   new Vue({
     el: '#app',
@@ -88,6 +89,7 @@
       ],{% block extra_data %}{% endblock %}
     }
   });
+-->
 </script>
 </body>
 </html>
