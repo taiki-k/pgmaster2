@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2022 Kondo Taiki
+  Copyright (C) 2020-2023 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -16,46 +16,18 @@
   You should have received a copy of the GNU General Public License
   along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
 
-#}<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>pgmaster2 {{ project }} - {{ branch }} - {{ commit.sid }}</title>
+#}{% extends "frame.html.jinja2" %}
+{% block title %} {{ project }} - {{ branch }} - {{ commit.sid }}{% endblock %}
+{% block extra_css%}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/stackoverflow-light.min.css" integrity="sha512-RDtnAhiPytLVV3AwzHkGVMVI4szjtSjxxyhDaH3gqdHPIw5qwQld1MVGuMu1EYoof+CaEccrO3zUVb13hQFU/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.css" integrity="sha512-NRfXz/kaXFChyyQ0KS2gW679sdfCYhKxwhqqGjaZMpDnWPhG0/OViu6TKkqtjwueBzZA4RpuhLY39U8NkHwZ3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.0.96/css/materialdesignicons.min.css" integrity="sha512-fXnjLwoVZ01NUqS/7G5kAnhXNXat6v7e3M9PhoMHOTARUMCaf5qNO84r5x9AFf5HDzm3rEZD8sb/n6dZ19SzFA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-</head>
-<body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.12/vuetify.min.js" integrity="sha512-RPnZ48qBYcvQ+7erC7Weu+EzbUmbZf8t7HQUeryQmr09ANWgAOVxkFWqIanp7GO7roCOsuxTO2par6iOF1mE3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock%}
+{% block extra_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="{{ url_for('static', filename='highlightjs-vue.min.js') }}"></script>
-<div id="app">
-  <v-app>
-    <v-app-bar
-      app
-      dark
-      color="primary"
-      v-once
-    >
-      <v-toolbar-title>pgmaster2 Investigate: {{ commit.sid }}</v-toolbar-title>
-    </v-app-bar>
-    <v-main>
-      <v-container>
-        <v-row v-once>
-          <v-col>
-            <v-breadcrumbs
-              :items="nav_items"
-            >
-              <template v-slot:divider>
-                <v-icon>mdi-chevron-right</v-icon>
-              </template>
-            </v-breadcrumbs>
-          </v-col>
-        </v-row>
+{% endblock %}
+{% block toolbar_title %} Investigate: {{ commit.sid }}{% endblock %}
+{% block main_contents %}
         <v-row v-once>
           <v-col
             cols="3"
@@ -364,44 +336,13 @@
             </v-col>
           </v-row>
         </v-form>
-      </v-container>
-    </v-main>
-  </v-app>
-</div>
-<script>
-<!--{% if config['DEBUG'] %}
-  Vue.config.devtools = true;{% endif %}
+{% endblock %}
+
+{% block vue_plugins %}
   Vue.use(hljsVuePlugin);
-  new Vue({
-    el: '#app',
-    vuetify: new Vuetify({
-      theme: {
-        themes: {
-          light: {
-            primary:   '#336791',
-            secondary: '#64a3c7'
-          }
-        }
-      }
-    }),
-    data: {
-      formValid: true,
-      diffs: [
-{% for diff in commit.diffs %}        "{{ diff }}",
-{% endfor %}      ],
-      btnColor: 'primary',
-      btnLoading: false,
-      investSNote: "{{ commit.snote }}",
-      investNote: "{{ commit.note }}",
-      investAnalysis: "{{ commit.analysis }}",
-      investKeywords: {{ commit.keywords }},
-      kwd_items: {{ keywords }},
-      nav_items: [
-        {
-          text: "Top",
-          disabled: false,
-          href: "{{ url_for('root') }}"
-        },
+{% endblock %}
+
+{% block navi_items %}
         {
           text: "{{ project }}",
           disabled: false,
@@ -417,9 +358,23 @@
           disabled: true,
           href: "#"
         },
-      ],
-    },
-    methods: {
+{% endblock %}
+
+{% block extra_data %}
+      formValid: true,
+      diffs: [
+{% for diff in commit.diffs %}        "{{ diff }}",
+{% endfor %}      ],
+      btnColor: 'primary',
+      btnLoading: false,
+      investSNote: "{{ commit.snote }}",
+      investNote: "{{ commit.note }}",
+      investAnalysis: "{{ commit.analysis }}",
+      investKeywords: {{ commit.keywords }},
+      kwd_items: {{ keywords }},
+{% endblock %}
+
+{% block vue_methods %}
       modify: async function() {
         this.$refs.kwdComboBox.blur();
         this.$nextTick(async () => {
@@ -446,9 +401,4 @@
           }
         });
       }
-    }
-  });
--->
-</script>
-</body>
-</html>
+{% endblock %}

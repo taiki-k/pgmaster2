@@ -1,0 +1,94 @@
+{#
+  Copyright (C) 2020-2023 Kondo Taiki
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>pgmaster2{% block title %}{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.14/vuetify.css" integrity="sha512-l0O44v9E3cDiLoczNfqPf+bF88C2AmLL/V+6tnd8bpXYVVN3F5JtHMK2tgiyye+KfAX776zPg1hwc6NsCYmHGw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.1.96/css/materialdesignicons.min.css" integrity="sha512-NaaXI5f4rdmlThv3ZAVS44U9yNWJaUYWzPhvlg5SC7nMRvQYV9suauRK3gVbxh7qjE33ApTPD+hkOW78VSHyeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% block extra_css %}{% endblock %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.14/vuetify.min.js" integrity="sha512-nBMFfEIXQ39T2kYZLT9sqJxWU/ZPCH3gXdhxhjphkT+Q3yBEI63AwolHTW45lhjf3VqZXhF+3lY35J+P+1wNhg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% block extra_scripts %}{% endblock %}
+<div id="app">
+  <v-app>
+    <v-app-bar
+      app
+      dark
+      color="primary"
+      v-once
+    >
+      <v-toolbar-title>pgmaster2{% block toolbar_title %}{% endblock %}</v-toolbar-title>
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <v-row v-once>
+          <v-col>
+            <v-breadcrumbs
+              :items="nav_items"
+            >
+              <template v-slot:divider>
+                <v-icon>mdi-chevron-right</v-icon>
+              </template>
+            </v-breadcrumbs>
+          </v-col>
+        </v-row>
+{% block main_contents %}{% endblock %}
+      </v-container>
+    </v-main>
+  </v-app>
+</div>
+<script>
+<!--{% if config['DEBUG'] %}
+  Vue.config.devtools = true;{% endif %}
+{% block vue_plugins %}{% endblock %}
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify({
+      theme: {
+        themes: {
+          light: {
+            primary:   '#336791',
+            secondary: '#64a3c7'
+          }
+        }
+      }
+    }),
+    data: {
+      nav_items: [
+        {
+          text: "Top",
+          disabled: false,
+          href: "{{ url_for('root') }}"
+        },{% block navi_items %}{% endblock %}
+      ],{% block extra_data %}{% endblock %}
+    },
+    methods: {
+{% block vue_methods %}{% endblock %}
+    }
+  });
+-->
+</script>
+</body>
+</html>

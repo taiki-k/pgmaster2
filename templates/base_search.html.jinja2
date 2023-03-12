@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2023 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -74,8 +74,11 @@
 {% if urls is defined and urls is not none %}
       page: {{ urls.page }},
       max_page: {{ urls.max_page }}
-    }, // end of *data*
-    methods: {
+{% endif %}
+{% endblock %}
+
+{% block vue_methods %}
+{% if urls is defined and urls is not none %}
       pushPage: function(page) {
         this.page = {{ urls.page }};
         location.href  = "{{ urls.baseURL }}?page=" + page + "&num={{ urls.num }}";
