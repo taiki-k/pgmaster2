@@ -29,15 +29,43 @@ import html
 from git import *
 from flask import *
 
-import pg_connection
+from pg_connection import pg_connection
 import pgmaster_utils
 import webapi_v1
 
-app = Flask(__name__)
-# Register WebAPI v1
-app.register_blueprint(webapi_v1.api, url_prefix=u'/api/v1')
+def create_app():
+  """
+  create_app() - Create a new Flask instance
+    No argument required.
+  """
+  global pg_conn
 
-pg_conn = None
+  app = Flask(__name__)
+
+  # Read configuration file
+  config_ini = configparser.ConfigParser()
+  config_ini.read('pgmaster.ini', encoding = 'utf-8')
+  dbinfo = config_ini['PGMASTER']
+
+  # Connect to the database
+  pg_conn = pg_connection(
+    server = dbinfo['Server'],
+    port = dbinfo['Port'],
+    database = dbinfo['Database'],
+    user = dbinfo['User'],
+    password = dbinfo['Password'],
+    pooling = int(dbinfo['Pooling'])
+  )
+
+  # Register pg_connection instance to WebAPI (and others) via app.config
+  app.config['PG_CONNECTION'] = pg_conn
+
+  # Register WebAPI v1
+  app.register_blueprint(webapi_v1.api, url_prefix=u'/api/v1')
+
+  return app
+
+app = create_app()
 
 @app.route('/')
 def root():
@@ -780,29 +808,6 @@ def search_backpatch(project, branch, commitid):
     commits = commits,
     urls = urls
   )
-
-@app.before_first_request
-def prepare_app():
-  global pg_conn
-
-  # Read configuration file
-  config_ini = configparser.ConfigParser()
-  config_ini.read('pgmaster.ini', encoding = 'utf-8')
-  dbinfo = config_ini['PGMASTER']
-
-  # Connect to the database
-  pg_conn = pg_connection.pg_connection(
-    server = dbinfo['Server'],
-    port = dbinfo['Port'],
-    database = dbinfo['Database'],
-    user = dbinfo['User'],
-    password = dbinfo['Password'],
-    pooling = int(dbinfo['Pooling'])
-  )
-
-  # Register pg_connection instance to WebAPI
-  webapi_v1.pg_conn = pg_conn
-
 
 if __name__ == "__main__":
   app.run(

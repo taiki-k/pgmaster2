@@ -22,10 +22,10 @@ import psycopg2
 from flask import *
 
 api = Blueprint('webapi_v1', __name__)
-pg_conn = None # Will be set by prepare_app() in pgmaster.py
 
 @api.route('/p/<project>/keyword')
 def keywords(project):
+  pg_conn = current_app.config['PG_CONNECTION']
   conn = pg_conn.connect()
   # Get keywords
   # TODO: Commonalize logic between here and normal page.
@@ -96,6 +96,7 @@ def investigate_modify(project, branch, commitid):
       'trace' : traceback.format_exc()
     }), 403
 
+  pg_conn = current_app.config['PG_CONNECTION']
   conn = pg_conn.connect()
 
   try:
