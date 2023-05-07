@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2023 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -20,51 +20,15 @@
 {% block message %}Select a Commit ID to investigate.{% endblock %}
 
 {% block selections %}
-            <v-sheet outlined>
+            <v-sheet border="sm">
               <v-row>
                 <v-col>
+                  <pg-search-result
 {% if urls is defined and urls is not none %}
-                  <v-pagination
-                    v-model="page"
-                    :length="max_page"
-                    :total-visible="10"
-                    @input="pushPage"
-                  ></v-pagination>{% endif %}
-                  <v-simple-table
-                    dense
-                  >
-                    <template>
-                      <thead>
-                        <tr>{% block table_title_head %}{% endblock %}
-{% if commits[0].branch is defined %}
-                          <th>Branch</th>{% endif %}
-                          <th>Commit ID</th>
-                          <th>Commit Date</th>
-                          <th>Title</th>
-                          <th>Author</th>
-                          <th>Updated</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-{% for commit in commits %}
-                        <tr>{% if commit.branch is defined %}
-                          <td>{{ commit.branch }}</td>{% endif %}
-                          <td style="font-family:monospace;"><a title="{{ commit.id }}" href="{{ commit.url }}">{{ commit.sid }}</a></td>
-                          <td style="font-family:monospace;">{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</td>
-                          <td>{{ commit.summary }}</td>
-                          <td>{{ commit.author }}</td>
-                          <td>{{ commit.updated }}</td>
-                        </tr>{% endfor %}
-                      </tbody>
-                    </template>
-                  </v-simple-table>
-{% if urls is defined and urls is not none %}
-                  <v-pagination
-                    v-model="page"
-                    :length="max_page"
-                    :total-visible="10"
-                    @input="pushPage"
-                  ></v-pagination>{% endif %}
+                    :page="page"
+                    :max_page="max_page"
+{% endif %}
+                  ></pg-search-result>
                 </v-col>
               </v-row>
             </v-sheet>
@@ -72,13 +36,70 @@
 
 {% block extra_data %}
 {% if urls is defined and urls is not none %}
-      page: {{ urls.page }},
-      max_page: {{ urls.max_page }}
-    }, // end of *data*
+        page: {{ urls.page }},
+        max_page: {{ urls.max_page }}
+{% endif %}
+{% endblock %}
+
+{% block vue_component%}
+  const PGSearchResult = {
+    template: `
+{% if urls is defined and urls is not none %}
+      <v-pagination
+        v-model="page"
+        :length="max_page"
+        :total-visible="10"
+        size="small"
+        @update:modelValue="pushPage"
+        show-first-last-page
+      ></v-pagination>{% endif %}
+      <v-table
+        density="compact"
+        hover
+      >
+        <thead>
+          <tr>{% block table_title_head %}{% endblock %}
+{% if commits[0].branch is defined %}
+            <th>Branch</th>{% endif %}
+            <th>Commit ID</th>
+            <th>Commit Date</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+{% for commit in commits %}
+          <tr>{% if commit.branch is defined %}
+            <td>{{ commit.branch }}</td>{% endif %}
+            <td style="font-family:monospace;"><a title="{{ commit.id }}" href="{{ commit.url }}">{{ commit.sid }}</a></td>
+            <td style="font-family:monospace;">{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</td>
+            <td>{{ commit.summary }}</td>
+            <td>{{ commit.author }}</td>
+            <td>{{ commit.updated }}</td>
+          </tr>{% endfor %}
+        </tbody>
+      </v-table>
+{% if urls is defined and urls is not none %}
+      <v-pagination
+        v-model="page"
+        :length="max_page"
+        :total-visible="10"
+        size="small"
+        @update:modelValue="pushPage"
+        show-first-last-page
+      ></v-pagination>{% endif %}
+    `,
+{% if urls is defined and urls is not none %}
+    props: ['page','max_page'],
+{% endif %}
     methods: {
-      pushPage: function(page) {
-        this.page = {{ urls.page }};
-        location.href  = "{{ urls.baseURL }}?page=" + page + "&num={{ urls.num }}";
+{% if urls is defined and urls is not none %}
+      pushPage(pageNext) {
+        location.href  = "{{ urls.baseURL }}?page=" + pageNext + "&num={{ urls.num }}";
       },
 {% endif %}
+    }
+  };
+  app.component('pg-search-result', PGSearchResult);
 {% endblock %}

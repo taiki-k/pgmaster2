@@ -4,20 +4,12 @@ Platform for investigation of each commits in git repositories, especially Postg
 
 ## Copyright and License
 
-Copyright (C) 2020-2022 Kondo Taiki
+Copyright (C) 2020-2023 Kondo Taiki
 
 This software is licensed under the GPL v3.  
 See `COPYING` file for more information.
 
 If you don't recieve it, see [the GNU web site](http://www.gnu.org/licenses/).
-
-### Exceptions
-
-This software contains (and uses) "Highlight.js plugin for Vue.js",
-and it is licensed under the BSD 3-Clause license.
-
-For more information about "Highlight.js plugin for Vue.js",
-see https://github.com/highlightjs/vue-plugin.
 
 ## How to Setup
 
