@@ -1,0 +1,108 @@
+{#
+  Copyright (C) 2020-2023 Kondo Taiki
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>pgmaster2{% block title %}{% endblock %}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.2.2/dist/vuetify.min.css" integrity="sha256-2vIF7LKpR2Bplzu4HZ4AkB8rn03IyyGxJE0yXfLBWl8=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" integrity="sha256-uJYGv0Ks3rTwXP9yn2Py8FdOhwEdSqWgUlOjv810Yb8=" crossorigin="anonymous">
+{% block extra_css %}{% endblock %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+{% if config['DEBUG'] %}<!-- DEBUG enabled -->
+<script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.min.js" crossorigin="anonymous"></script>
+{% else %}<!-- Production -->
+<script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js" integrity="sha256-nD+4X/UNYqnXqWJINYbQ2ptd/0F72GB75bGgIdWtYsM=" crossorigin="anonymous"></script>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/vuetify@3.2.2/dist/vuetify.min.js" integrity="sha256-UHxn4majuMYlQ9mRQEC4pcsyVBuQiTtJf8GdoZ/lkHM=" crossorigin="anonymous"></script>
+{% block extra_scripts %}{% endblock %}
+<div id="app">
+  <v-app>
+    <v-app-bar
+      app
+      dark
+      color="primary"
+      v-once
+    >
+      <v-toolbar-title>pgmaster2{% block toolbar_title %}{% endblock %}</v-toolbar-title>
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <v-row v-once>
+          <v-col>
+            <v-breadcrumbs
+              :items="nav_items"
+            >
+              <template v-slot:divider>
+                <v-icon icon="mdi-chevron-right"></v-icon>
+              </template>
+            </v-breadcrumbs>
+          </v-col>
+        </v-row>
+{% block main_contents %}{% endblock %}
+      </v-container>
+    </v-main>
+  </v-app>
+</div>
+<script type="text/javascript">
+<!--
+  const pgmasterLightTheme = {
+    dark: false,
+    colors: {
+      primary:   '#336791',
+      secondary: '#64a3c7'
+    }
+  };
+
+  const VuetifyApp = Vuetify.createVuetify({
+    theme: {
+      defaultTheme: 'pgmasterLightTheme',
+      themes: {
+        pgmasterLightTheme,
+      }
+    }
+  });
+
+  const app = Vue.createApp({
+    data() {
+      return {
+        nav_items: [
+          {
+            text: "Top",
+            disabled: false,
+            href: "{{ url_for('root') }}"
+          },{% block navi_items %}{% endblock %}
+        ],{% block extra_data %}{% endblock %}
+      };
+    },
+    methods: {
+{% block vue_methods %}{% endblock %}
+    }
+  });
+{% block vue_component%}{% endblock %}
+  app.use(VuetifyApp);
+{% block vue_plugins %}{% endblock %}
+  app.mount('#app');
+-->
+</script>
+</body>
+</html>

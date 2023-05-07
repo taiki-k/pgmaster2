@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2023 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -27,13 +27,12 @@
                       <v-list-item
                         href="{{ project.url }}"
                       >
-                        <v-list-item-icon>
+                        <template v-slot:prepend>
                           <v-icon
                             color="deep-orange"
-                          >mdi-git</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ project.name }}</v-list-item-title>
-                        </v-list-item-content>
+                            icon="mdi-source-repository">
+                          </v-icon>
+                        </template>
+                        <v-list-item-title>{{ project.name }}</v-list-item-title>
                       </v-list-item>{% endfor %}
 {% endblock %}
