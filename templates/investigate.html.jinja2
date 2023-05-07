@@ -365,9 +365,9 @@
 {% endfor %}      ],
       btnColor: 'primary',
       btnLoading: false,
-      investSNote: "{{ commit.snote }}",
-      investNote: "{{ commit.note }}",
-      investAnalysis: "{{ commit.analysis }}",
+      investSNote: `{{ commit.snote }}`,
+      investNote: `{{ commit.note }}`,
+      investAnalysis: `{{ commit.analysis }}`,
       investKeywords: {{ commit.keywords }},
       kwd_items: {{ keywords }},
 {% endblock %}
