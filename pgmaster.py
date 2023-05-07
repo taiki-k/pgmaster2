@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020-2022 Kondo Taiki
+# Copyright (C) 2020-2023 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -280,12 +280,13 @@ def investigate(project, branch, commitid):
     commitid: commitid
   """
   # We have to replace from following chars to escaped one,
-  # because these will be inserted as JSON string.
+  # because these will be inserted as Template string (ES6).
   trans_escaped = str.maketrans({
       '"'  : r'\"',
       '\'' : r'\'',
+      '`'  : r'\`',
+      '$'  : r'\$',
       '\\' : r'\\',
-      '\n' : r'\n',
       '\r' : r''
     })
 
@@ -296,20 +297,20 @@ def investigate(project, branch, commitid):
       b_path = 'b/%s' % d.b_rawpath.decode('utf-8') if d.b_rawpath is not None else '/dev/null'
 
       # Sanitize diff
-      # This part will be inserted as JSON string.
+      # This part will be inserted as Template string (ES6).
       code_diff = d.diff.decode('utf-8').translate(trans_escaped)
 
       # Real LF are not accepted in JSON string.
-      # We use "\n" to tell LF point to browsers.
+      # We use Template string (ES6) instead.
       patch_str = (
-        u'--- %s\\n'
-        u'+++ %s\\n'
-        u'\\n'
+        u'--- %s\n'
+        u'+++ %s\n'
+        u'\n'
         u'%s'
       ) % (
         a_path,
         b_path,
-        u'\\n'.join(code_diff.splitlines())
+        code_diff
       )
 
       diffs.append(patch_str)

@@ -19,12 +19,12 @@
 #}{% extends "frame.html.jinja2" %}
 {% block title %} {{ project }} - {{ branch }} - {{ commit.sid }}{% endblock %}
 {% block extra_css%}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/stackoverflow-light.min.css" integrity="sha512-RDtnAhiPytLVV3AwzHkGVMVI4szjtSjxxyhDaH3gqdHPIw5qwQld1MVGuMu1EYoof+CaEccrO3zUVb13hQFU/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/stackoverflow-light.css" integrity="sha256-L+76i0kfkr5WR7T97FBEaxeeyvDBvEY6U6RdNSDXFQ0=" crossorigin="anonymous"  referrerpolicy="no-referrer">
 {% endblock%}
 {% block extra_scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="{{ url_for('static', filename='highlightjs-vue.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js" integrity="sha256-/UzhKodZQoGvzunHOkD+eswoK8yedk+7OvoUgalqCR4=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js" integrity="sha256-RJn/k21P1WKtylpcvlEtwZ64CULu6GGNr7zrxPeXS9s=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/vue-plugin@2.1.0/dist/highlightjs-vue.min.js" integrity="sha256-GbaOiylookuXWmORzKdbqIprS3SqZKLtqXjeD/tHivg=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {% endblock %}
 {% block toolbar_title %} Investigate: {{ commit.sid }}{% endblock %}
 {% block main_contents %}
@@ -33,21 +33,21 @@
             cols="3"
           >
             <v-menu
-              offset-y
-{% if not urls.parents %}
+{% if urls.parents %}
+              open-on-hover
+{% else %}
               disabled
 {% endif %}
             >
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-btn
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   color="secondary"
 {% if not urls.parents %}
                   disabled
 {% endif %}
                 >
-                  <v-icon>mdi-page-previous-outline</v-icon>
+                  <v-icon icon="mdi-page-previous-outline"></v-icon>
                   Parent
                 </v-btn>
               </template>
@@ -55,29 +55,29 @@
 {% if urls.parents %}{% for parent in urls.parents %}
                 <v-list-item
                   href="{{ url_for('investigate', project = project, branch = branch, commitid = parent.id) }}"
+                  prepend-icon="mdi-source-merge"
                 >
-                  <v-icon>mdi-source-merge</v-icon>
-                  <v-list-title>{{ parent.sid }}</v-list-title>
+                  <v-list-item-title>{{ parent.sid }}</v-list-item-title>
                 </v-list-item>
 {% endfor %}{% endif %}
               </v-list>
             </v-menu>
             <v-menu
-              offset-y
-{% if not urls.children %}
+{% if urls.children %}
+              open-on-hover
+{% else %}
               disabled
 {% endif %}
             >
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-btn
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   color="secondary"
 {% if not urls.children %}
                   disabled
 {% endif %}
                 >
-                  <v-icon>mdi-page-next-outline</v-icon>
+                  <v-icon icon="mdi-page-next-outline"></v-icon>
                   Child
                 </v-btn>
               </template>
@@ -85,9 +85,9 @@
 {% if urls.children %}{% for child in urls.children %}
                 <v-list-item
                   href="{{ url_for('investigate', project = project, branch = branch, commitid = child.id) }}"
+                  prepend-icon="mdi-source-fork"
                 >
-                  <v-icon>mdi-source-fork</v-icon>
-                  <v-list-title>{{ child.sid }}</v-list-title>
+                  <v-list-item-title>{{ child.sid }}</v-list-item-title>
                 </v-list-item>
 {% endfor %}{% endif %}
               </v-list>
@@ -105,7 +105,7 @@
               disabled
 {% endif %}
             >
-              <v-icon>mdi-file-link</v-icon>
+              <v-icon icon="mdi-file-link"></v-icon>
               View Files
             </v-btn>
           </v-col>
@@ -121,12 +121,13 @@
           >
 {% if commit.initial %}
              <v-alert
-              dense
+              density="compact"
               elevation="10"
               prominent
               type="warning"
+              title="You are viewing a worthless diff."
             >
-              Since this is the initial commit, the diff is worthless.<br />
+              Since this is the initial commit, the following diff is worthless.<br />
               Please look at the files directly in {% if urls.repo_browser %}<a href="{{ urls.repo_browser }}">{% endif %}the repository browser{% if urls.repo_browser %}</a>{% endif %}.
             </v-alert>
 {% else %}
@@ -137,20 +138,20 @@
             cols="6"
           >
             <v-card
-              outlined
+              border="sm"
+              variant="flat"
+              lines="two"
             >
-              <v-list-item two-line>
-                <v-list-item-content>
-                  <v-list-item-title>Last updated</v-list-item-title>
-                  <v-list-item-subtitle>{{ commit.updated }}</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
+              <v-card-item prepend-icon="mdi-update">
+                <v-card-title class="text-subtitle-1">Last updated</v-card-title>
+                <v-card-text>{{ commit.updated }}</v-card-text>
+              </v-card-item>
             </v-card>
           </v-col>
         </v-row>
         <v-form
           ref="invest"
-          v-mode="formValid"
+          v-model="formValid"
           @submit.prevent="modify"
         >
           <v-row v-once>
@@ -158,13 +159,12 @@
               cols="6"
             >
               <v-card
-                outlined
                 elevation="4"
                 class="overflow-y-auto"
                 style="height: 108px"
               >
                 <v-card-title
-                  class="title text--primary"
+                  class="title text--primary text-wrap"
                 >
                   {{ commit.summary }}
                 </v-card-title>
@@ -176,8 +176,8 @@
               <v-textarea
                 v-model="investSNote"
                 label="Short note (Title)"
-                height="108"
-                outlined
+                variant="outlined"
+                rows="3"
                 clearable
                 required
               >
@@ -189,21 +189,16 @@
               cols="6"
             >
               <v-card
-                outlined
                 elevation="4"
               >
-                <v-list-item two-line>
-                  <v-list-item-content>
-                    <v-list-item-title>Author</v-list-item-title>
-                    <v-list-item-subtitle>{{ commit.author }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item two-line>
-                  <v-list-item-content>
-                    <v-list-item-title>Commit Date</v-list-item-title>
-                    <v-list-item-subtitle>{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
+                <v-card-item>
+                  <v-card-title class="text-subtitle-1">Author</v-card-title>
+                  <v-card-text>{{ commit.author }}</v-card-text>
+                </v-card-item>
+                <v-card-item>
+                  <v-card-title class="text-subtitle-1">Commit Date</v-card-title>
+                  <v-card-text>{{ commit.date }} {% if commit.tz >= 0 %}+{% endif %}{{ commit.tz }}</v-card-text>
+                </v-card-item>
               </v-card>
             </v-col>
             <v-col
@@ -217,7 +212,6 @@
               cols="6"
             >
               <v-card
-                outlined
                 elevation="4"
                 class="overflow-y-auto"
                 style="height: 600px"
@@ -234,10 +228,10 @@
               <v-textarea
                 v-model="investNote"
                 label="Note"
-                height="600"
+                variant="outlined"
+                rows="24"
                 required
                 clearable
-                outlined
               >
               </v-textarea>
             </v-col>
@@ -256,7 +250,11 @@
                   dense
                 >
                   <v-col>
-                    <highlightjs language="diff" :code="code_diff" style="overflow-x: visible" />
+                    <highlightjs
+                      language="diff"
+                      :code="code_diff"
+                      style="overflow-x: visible; font-size: small;"
+                    ></highlightjs>
                   </v-col>
                 </v-row>
               </v-container>
@@ -267,10 +265,10 @@
               <v-textarea
                 v-model="investAnalysis"
                 label="Code Analysis"
-                height="600"
+                variant="outlined"
+                rows="24"
                 required
                 clearable
-                outlined
               >
               </v-textarea>
             </v-col>
@@ -289,7 +287,7 @@
                 :items="kwd_items"
                 label="Keywords"
                 ref="kwdComboBox"
-                outlined
+                variant="outlined"
                 clearable
                 multiple
                 chips
@@ -305,7 +303,7 @@
               <!-- Padding -->
             </v-col>
             <v-col
-              cols="1"
+              cols="3"
               v-once
             >
               <v-btn
@@ -316,13 +314,13 @@
               </v-btn>
             </v-col>
             <v-col
-              cols="4"
+              cols="1"
               v-once
             >
               <!-- Padding -->
             </v-col>
             <v-col
-              cols="1"
+              cols="2"
             >
               <v-btn
                 :color="btnColor"
@@ -339,31 +337,31 @@
 {% endblock %}
 
 {% block vue_plugins %}
-  Vue.use(hljsVuePlugin);
+  app.use(hljsVuePlugin);
 {% endblock %}
 
 {% block navi_items %}
-        {
-          text: "{{ project }}",
-          disabled: false,
-          href: "{{ url_for('project', project = project) }}"
-        },
-        {
-          text: "{{ branch }}",
-          disabled: false,
-          href: "{{ url_for('branch', project = project, branch = branch) }}"
-        },
-        {
-          text: "{{ commit.sid }}",
-          disabled: true,
-          href: "#"
-        },
+          {
+            text: "{{ project }}",
+            disabled: false,
+            href: "{{ url_for('project', project = project) }}"
+          },
+          {
+            text: "{{ branch }}",
+            disabled: false,
+            href: "{{ url_for('branch', project = project, branch = branch) }}"
+          },
+          {
+            text: "{{ commit.sid }}",
+            disabled: true,
+            href: "#"
+          },
 {% endblock %}
 
 {% block extra_data %}
       formValid: true,
       diffs: [
-{% for diff in commit.diffs %}        "{{ diff }}",
+{% for diff in commit.diffs %}`{{ diff }}`,
 {% endfor %}      ],
       btnColor: 'primary',
       btnLoading: false,

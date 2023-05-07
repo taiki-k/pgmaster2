@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020 Kondo Taiki
+  Copyright (C) 2020-2023 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -20,14 +20,14 @@
 {% block title %} {{ project }} - Search {{ commitid }}{% endblock %}
 
 {% block navi_items %}
-        {
-          text: "{{ project }}",
-          disabled: false,
-          href: "{{ url_for('project', project = project) }}"
-        },
-        {
-          text: "Search {{ commitid }}",
-          disabled: true,
-          href: "#"
-        },
+          {
+            text: "{{ project }}",
+            disabled: false,
+            href: "{{ url_for('project', project = project) }}"
+          },
+          {
+            text: "Search {{ commitid }}",
+            disabled: true,
+            href: "#"
+          },
 {% endblock %}
