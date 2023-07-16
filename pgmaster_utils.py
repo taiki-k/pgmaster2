@@ -20,6 +20,23 @@
 import git
 import psycopg2.extensions
 
+# We have to replace from following chars to escaped one for Template string (ES6)
+__trans_escaped = str.maketrans({
+    '"'  : r'\"',
+    '\'' : r'\'',
+    '`'  : r'\`',
+    '$'  : r'\$',
+    '\\' : r'\\',
+    '\r' : r''
+  })
+
+def json_escape(s: str) -> str:
+  """
+  json_escape() - Escape special chars for string in JSON (or JavaScript)
+    s : str to escape
+  """
+  return s.translate(__trans_escaped)
+
 def git_ancestor(commit: git.Commit):
   """
   git_ancestor() - Search and get parents of specified commit
