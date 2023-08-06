@@ -199,19 +199,22 @@ def update_repo(param):
       print(u"INFO[%d] <%s>: done." % (num, get_now()))
     # end of for branches
 
-    # Push to GitLab if defined.
-    # Remote name must be "gitlab".
-    try:
-      repo.remotes.gitlab.push(u'--all')
-      print(u"LOG[%d] <%s>: Pushed all branches to GitLab." % (num, get_now()))
-      repo.remotes.gitlab.push(u'--tags')
-      print(u"LOG[%d] <%s>: Pushed all tags to GitLab." % (num, get_now()))
-    except AttributeError as e:
-      # Remote "gitlab" is not defined.
-      print(u"INFO[%d] <%s>: Remote 'gitlab' is not defined." % (num, get_now()))
-      print(u"HINT[%d] : Define remote 'gitlab' to push to GitLab automatically." % (num))
-    except Exception as e:
-      raise
+    # Push to other remote repositories if defined.
+    # Remote name must be other than "origin".
+    for remote_repo in repo.remotes:
+      if remote_repo.name == "origin":
+        print(u"INFO[%d] <%s>: Mirroring to remote 'origin' is skipped." % (num, get_now()))
+        continue
+
+      try:
+        git_cmd.push(remote_repo.name, u'--all')
+        print(u"LOG[%d] <%s>: Pushed all branches to '%s'." % (num, get_now(), remote_repo.name))
+        git_cmd.push(remote_repo.name, u'--tags')
+        print(u"LOG[%d] <%s>: Pushed all tags to '%s'." % (num, get_now(), remote_repo.name))
+      except Exception as e:
+        print(u"ERROR[%d] <%s>: Error occurred while mirroring to \"%s\". (%s)" % (num, get_now(), remote_repo.name, str(e)))
+        print((u"DETAIL[%d]: " % (num)) + traceback.format_exc())
+        # Don't stop mirroring.
 
   except Exception as e:
     print(u"ERROR[%d] <%s>: Error occurred. (%s)" % (num, get_now(), str(e)))
