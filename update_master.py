@@ -212,7 +212,7 @@ def update_repo(param):
         git_cmd.push(remote_repo.name, u'--tags')
         print(u"LOG[%d] <%s>: Pushed all tags to '%s'." % (num, get_now(), remote_repo.name))
       except Exception as e:
-        print(u"ERROR[%d] <%s>: Error occurred while mirroring to \"%s\". (%s)" % (num, get_now(), remote_repo.name, str(e)))
+        print(u"ERROR[%d] <%s>: Error occurred while mirroring to '%s'. (%s)" % (num, get_now(), remote_repo.name, str(e)))
         print((u"DETAIL[%d]: " % (num)) + traceback.format_exc())
         # Don't stop mirroring.
 
