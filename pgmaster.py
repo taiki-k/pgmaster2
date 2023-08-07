@@ -256,7 +256,7 @@ def branch(project, branch):
           'date'    : c[2],
           'tz'      : c[3],
           'updated' : c[4],
-          'summary' : html.escape(commit.summary),
+          'summary' : html.escape(pgmaster_utils.json_escape(commit.summary)),
           'author'  : html.escape(commit.author.name),
           'url'     : url_for(
             'investigate',
@@ -307,16 +307,6 @@ def investigate(project, branch, commitid):
     branch  : branch name
     commitid: commitid
   """
-  # We have to replace from following chars to escaped one,
-  # because these will be inserted as Template string (ES6).
-  trans_escaped = str.maketrans({
-      '"'  : r'\"',
-      '\'' : r'\'',
-      '`'  : r'\`',
-      '$'  : r'\$',
-      '\\' : r'\\',
-      '\r' : r''
-    })
 
   def make_patch(src, dst):
     diffs = []
@@ -326,7 +316,7 @@ def investigate(project, branch, commitid):
 
       # Sanitize diff
       # This part will be inserted as Template string (ES6).
-      code_diff = d.diff.decode('utf-8').translate(trans_escaped)
+      code_diff = pgmaster_utils.json_escape(d.diff.decode('utf-8'))
 
       # Real LF are not accepted in JSON string.
       # We use Template string (ES6) instead.
@@ -493,9 +483,9 @@ def investigate(project, branch, commitid):
         'author'     : html.escape(commit.author.name + ' <' + commit.author.email + '>'),
         'diffs'      : make_patch(p_commit, commit),
         'initial'    : initial_commit,
-        'snote'      : c[4].translate(trans_escaped) if c[4] is not None else u'',
-        'note'       : c[5].translate(trans_escaped) if c[5] is not None else u'',
-        'analysis'   : c[6].translate(trans_escaped) if c[6] is not None else u'',
+        'snote'      : pgmaster_utils.json_escape(c[4]) if c[4] is not None else u'',
+        'note'       : pgmaster_utils.json_escape(c[5]) if c[5] is not None else u'',
+        'analysis'   : pgmaster_utils.json_escape(c[6]) if c[6] is not None else u'',
         'keywords'   : c[7] if c[7] is not None else []
       }
     # End of "with conn.cursor()"
