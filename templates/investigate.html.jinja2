@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2023 Kondo Taiki
+  Copyright (C) 2020-2024 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -19,11 +19,11 @@
 #}{% extends "frame.html.jinja2" %}
 {% block title %} {{ project }} - {{ branch }} - {{ commit.sid }}{% endblock %}
 {% block extra_css%}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/stackoverflow-light.css" integrity="sha256-L+76i0kfkr5WR7T97FBEaxeeyvDBvEY6U6RdNSDXFQ0=" crossorigin="anonymous"  referrerpolicy="no-referrer">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/stackoverflow-light.min.css" integrity="sha256-L+76i0kfkr5WR7T97FBEaxeeyvDBvEY6U6RdNSDXFQ0=" crossorigin="anonymous" referrerpolicy="no-referrer">
 {% endblock%}
 {% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js" integrity="sha256-/UzhKodZQoGvzunHOkD+eswoK8yedk+7OvoUgalqCR4=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js" integrity="sha256-RJn/k21P1WKtylpcvlEtwZ64CULu6GGNr7zrxPeXS9s=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js" integrity="sha256-itEcTLB5u6kxVnJycPUQKS7tzAcWxvIXJQdKWeyLm5Y=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" integrity="sha256-g3pvpbDHNrUrveKythkPMF2j/J7UFoHbUyFQcFe1yEY=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/@highlightjs/vue-plugin@2.1.0/dist/highlightjs-vue.min.js" integrity="sha256-GbaOiylookuXWmORzKdbqIprS3SqZKLtqXjeD/tHivg=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {% endblock %}
 {% block toolbar_title %} Investigate: {{ commit.sid }}{% endblock %}
@@ -342,17 +342,17 @@
 
 {% block navi_items %}
           {
-            text: "{{ project }}",
+            title: "{{ project }}",
             disabled: false,
             href: "{{ url_for('project', project = project) }}"
           },
           {
-            text: "{{ branch }}",
+            title: "{{ branch }}",
             disabled: false,
             href: "{{ url_for('branch', project = project, branch = branch) }}"
           },
           {
-            text: "{{ commit.sid }}",
+            title: "{{ commit.sid }}",
             disabled: true,
             href: "#"
           },
