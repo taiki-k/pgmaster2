@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020-2021 Kondo Taiki
+# Copyright (C) 2020-2024 Kondo Taiki
 #
 # This file is part of "pgmaster2".
 #
@@ -19,6 +19,8 @@
 
 import traceback
 import psycopg2
+import fcntl
+from git import *
 from flask import *
 
 api = Blueprint('webapi_v1', __name__)
@@ -149,4 +151,52 @@ def investigate_modify(project, branch, commitid):
 
   return jsonify({
     'succeed' : True
+  })
+
+@api.route('/p/<project>/c/<commitid>/translate', methods = ['GET'])
+def translate_commitlog(project, commitid):
+  try:
+    from argostranslate.translate import translate
+  except:
+    return jsonify({
+      'succeed' : False,
+      'cause'   : u'Not supported on this instance.'
+    }), 406
+
+  # TODO : Read Accept-Language from browser
+  translate_from = 'en'
+  translate_to = 'ja'
+
+  try:
+    # Connect to git repository
+    fd = open(u'git/.lock.' + project, 'r')
+    fcntl.flock(fd, fcntl.LOCK_SH | fcntl.LOCK_NB)  # LOCK!
+    repo = Repo(u'git/' + project + u'.git')
+
+    if not repo.bare:
+      raise FileNotFoundError
+
+    # Translate here
+    commit = repo.commit(commitid)
+    translated_message = translate(commit.message, translate_from, translate_to)
+
+  except (FileNotFoundError, ValueError) as e:
+    return jsonify({
+      'succeed' : False,
+      'cause'   : u'Not Found.'
+    }), 404
+  except:
+    return jsonify({
+      'succeed' : False,
+      'trace'   : traceback.format_exc()
+    }), 500
+  finally:
+    if fd is not None:
+      fcntl.flock(fd, fcntl.LOCK_UN)  # UNLOCK!
+      fd.close()
+      fd = None
+
+  return jsonify({
+    'succeed' : True,
+    'message' : translated_message
   })

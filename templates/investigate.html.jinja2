@@ -213,12 +213,26 @@
             >
               <v-card
                 elevation="4"
-                class="overflow-y-auto"
-                style="height: 600px"
+                style="height: 680px"
               >
+                <v-tabs
+                  v-model="tab"
+                  bg-color="secondary"
+                  density="compact"
+                >
+                  <v-tab value="origMessage"><v-icon icon="mdi-message-text"></v-icon>Commit Message</v-tab>
+                  <v-tab value="translateMessage" @click="translate"><v-icon icon="mdi-translate"></v-icon>Translate</v-tab>
+                </v-tabs>
                 <v-card-text>
-                  <p v-pre>{{ commit.message }}
-                  </p>
+                  <v-tabs-window v-model="tab" style="height: 600px" class="overflow-y-auto">
+                    <v-tabs-window-item value="origMessage">
+                      <p v-pre>{{ commit.message }}
+                      </p>
+                    </v-tabs-window-item>
+                    <v-tabs-window-item value="translateMessage">
+                      <p style="white-space: pre-wrap;" v-text="translatedMessage"></p>
+                    </v-tabs-window-item>
+                  </v-tabs-window>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -229,7 +243,7 @@
                 v-model="investNote"
                 label="Note"
                 variant="outlined"
-                rows="24"
+                rows="27"
                 required
                 clearable
               >
@@ -360,6 +374,8 @@
 
 {% block extra_data %}
       formValid: true,
+      tab: null,
+      translatedMessage: null,
       diffs: [
 {% for diff in commit.diffs %}`{{ diff }}`,
 {% endfor %}      ],
@@ -398,5 +414,24 @@
             this.btnLoading = false;
           }
         });
+      },
+      translate: async function() {
+        try {
+          if (this.translatedMessage)
+            return;
+
+          res = await axios.get(
+            "{{ url_for('webapi_v1.translate_commitlog', project = project, commitid = commit.id) }}",
+            null
+          )
+          jsonMessage = res.data.message;
+          this.translatedMessage = jsonMessage;
+        }
+        catch (error) {
+          this.translatedMessage = 'Not supported on this instance.';
+        }
+        finally {
+          /* No-op */
+        }
       }
 {% endblock %}
