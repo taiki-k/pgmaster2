@@ -233,6 +233,13 @@
                       <p style="white-space: pre-wrap;" v-text="translatedMessage"></p>
                     </v-tabs-window-item>
                   </v-tabs-window>
+                  <v-progress-linear
+                    :active="translateInProgress"
+                    :indeterminate="translateInProgress"
+                    color="primary"
+                    height="10"
+                    bottom
+                  ></v-progress-linear>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -386,6 +393,7 @@
       investAnalysis: `{{ commit.analysis }}`,
       investKeywords: {{ commit.keywords }},
       kwd_items: {{ keywords }},
+      translateInProgress: false,
 {% endblock %}
 
 {% block vue_methods %}
@@ -409,6 +417,7 @@
           }
           catch (error) {
             this.btnColor = 'error';
+            console.log(error.response.data);
           }
           finally {
             this.btnLoading = false;
@@ -416,6 +425,7 @@
         });
       },
       translate: async function() {
+        this.translateInProgress = true;
         try {
           if (this.translatedMessage)
             return;
@@ -428,10 +438,15 @@
           this.translatedMessage = jsonMessage;
         }
         catch (error) {
-          this.translatedMessage = 'Not supported on this instance.';
+          if (error.response.data && error.response.data.cause) {
+            this.translatedMessage = error.response.data.cause;
+          } else {
+            this.translatedMessage = 'Unknown error occured. Please report this situation to the system administrator.';
+            console.log(error.response.data);
+          }
         }
         finally {
-          /* No-op */
+          this.translateInProgress = false;
         }
       }
 {% endblock %}

@@ -155,6 +155,36 @@ def investigate_modify(project, branch, commitid):
 
 @api.route('/p/<project>/c/<commitid>/translate', methods = ['GET'])
 def translate_commitlog(project, commitid):
+  """
+  translate_commitlog() - Translate the commit message using machine translation.
+    project : project name
+    commitid: commitid
+  """
+
+  def format_to_translation(message: str) -> str:
+    import re
+
+    # To detect 'Author: ', 'Discussion: ', 'Reviewed-by:', etc.
+    regex_pattern = re.compile(r'[A-Za-z\-]+: ')
+
+    list_paragraph = message.split(sep = '\n\n')
+    unbreak_paragraph = []
+    for p in list_paragraph:
+      paragraph_lines = p.splitlines(keepends = True)
+      unbreak_lines = []
+      for line in paragraph_lines:
+        if regex_pattern.match(line) is not None:
+          # Line starts with 'Author: ', 'Discussion: ', 'Reviewed-by:', etc.
+          unbreak_lines.append(line)
+        else:
+          # Sentence. Un-break line.
+          unbreak_lines.append(line.rstrip() + ' ')
+
+      unbreak_paragraph.append(''.join(unbreak_lines))
+
+    formatted_message = '\n\n'.join(unbreak_paragraph)
+    return formatted_message
+
   try:
     from argostranslate.translate import translate
   except:
@@ -167,6 +197,7 @@ def translate_commitlog(project, commitid):
   translate_from = 'en'
   translate_to = 'ja'
 
+  fd = None
   try:
     # Connect to git repository
     fd = open(u'git/.lock.' + project, 'r')
@@ -178,7 +209,7 @@ def translate_commitlog(project, commitid):
 
     # Translate here
     commit = repo.commit(commitid)
-    translated_message = translate(commit.message, translate_from, translate_to)
+    translated_message = translate(format_to_translation(commit.message), translate_from, translate_to)
 
   except (FileNotFoundError, ValueError) as e:
     return jsonify({
