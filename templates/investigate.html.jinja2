@@ -213,12 +213,33 @@
             >
               <v-card
                 elevation="4"
-                class="overflow-y-auto"
-                style="height: 600px"
+                style="height: 680px"
               >
+                <v-tabs
+                  v-model="tab"
+                  bg-color="secondary"
+                  density="compact"
+                >
+                  <v-tab value="origMessage"><v-icon icon="mdi-message-text"></v-icon>Commit Message</v-tab>
+                  <v-tab value="translateMessage" @click="translate"><v-icon icon="mdi-translate"></v-icon>Translate</v-tab>
+                </v-tabs>
                 <v-card-text>
-                  <p v-pre>{{ commit.message }}
-                  </p>
+                  <v-tabs-window v-model="tab" style="height: 600px" class="overflow-y-auto">
+                    <v-tabs-window-item value="origMessage">
+                      <p v-pre>{{ commit.message }}
+                      </p>
+                    </v-tabs-window-item>
+                    <v-tabs-window-item value="translateMessage">
+                      <p style="white-space: pre-wrap;" v-text="translatedMessage"></p>
+                    </v-tabs-window-item>
+                  </v-tabs-window>
+                  <v-progress-linear
+                    :active="translateInProgress"
+                    :indeterminate="translateInProgress"
+                    color="primary"
+                    height="10"
+                    bottom
+                  ></v-progress-linear>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -229,7 +250,7 @@
                 v-model="investNote"
                 label="Note"
                 variant="outlined"
-                rows="24"
+                rows="27"
                 required
                 clearable
               >
@@ -360,6 +381,8 @@
 
 {% block extra_data %}
       formValid: true,
+      tab: null,
+      translatedMessage: null,
       diffs: [
 {% for diff in commit.diffs %}`{{ diff }}`,
 {% endfor %}      ],
@@ -370,6 +393,7 @@
       investAnalysis: `{{ commit.analysis }}`,
       investKeywords: {{ commit.keywords }},
       kwd_items: {{ keywords }},
+      translateInProgress: false,
 {% endblock %}
 
 {% block vue_methods %}
@@ -393,10 +417,36 @@
           }
           catch (error) {
             this.btnColor = 'error';
+            console.log(error.response.data);
           }
           finally {
             this.btnLoading = false;
           }
         });
+      },
+      translate: async function() {
+        this.translateInProgress = true;
+        try {
+          if (this.translatedMessage)
+            return;
+
+          res = await axios.get(
+            "{{ url_for('webapi_v1.translate_commitlog', project = project, commitid = commit.id) }}",
+            null
+          )
+          jsonMessage = res.data.message;
+          this.translatedMessage = jsonMessage;
+        }
+        catch (error) {
+          if (error.response.data && error.response.data.cause) {
+            this.translatedMessage = error.response.data.cause;
+          } else {
+            this.translatedMessage = 'Unknown error occured. Please report this situation to the system administrator.';
+            console.log(error.response.data);
+          }
+        }
+        finally {
+          this.translateInProgress = false;
+        }
       }
 {% endblock %}
