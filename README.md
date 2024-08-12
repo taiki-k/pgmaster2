@@ -4,7 +4,7 @@ Platform for investigation of each commits in git repositories, especially Postg
 
 ## Copyright and License
 
-Copyright (C) 2020-2023 Kondo Taiki
+Copyright (C) 2020-2024 Kondo Taiki
 
 This software is licensed under the GPL v3.  
 See `COPYING` file for more information.
@@ -23,6 +23,24 @@ You can use requirements.txt, so simply run following.
 ```
 $ pip install -r requirements.txt
 ```
+
+#### To use machine translation feature.
+
+This is optional.  
+To use this feature, install additional Python packages as follows:
+
+1. Install PyTorch.  
+   See [PyTorch Get Started page](https://pytorch.org/get-started/locally/).  
+   Install only `torch`, argostranlate depends on.  
+   In the "Compute Platform" column, just choose the right option.   
+   (The options you use with the pip command are different.)
+2. Install [ArgosTranslate](https://www.argosopentech.com/).  
+   `$ pip install argostranslate`  
+   NOTE: If you skip installing PyTorch, pip will install a **CUDA-dependent version** of PyTorch.  
+         In this situation, you'll need a CUDA-usable GPU to run this feature.
+3. Download translation model(s).  
+   `$ argospm update`  
+   `$ argosom install translate-en_ja` (ex. English to Japanese)
 
 ### Prepare Database
 

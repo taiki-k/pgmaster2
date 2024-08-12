@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2023 Kondo Taiki
+  Copyright (C) 2020-2024 Kondo Taiki
 
   This file is part of "pgmaster2".
 
@@ -19,11 +19,11 @@
 #}{% extends "frame.html.jinja2" %}
 {% block title %} {{ project }} - {{ branch }} - {{ commit.sid }}{% endblock %}
 {% block extra_css%}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/stackoverflow-light.css" integrity="sha256-L+76i0kfkr5WR7T97FBEaxeeyvDBvEY6U6RdNSDXFQ0=" crossorigin="anonymous"  referrerpolicy="no-referrer">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/stackoverflow-light.min.css" integrity="sha256-L+76i0kfkr5WR7T97FBEaxeeyvDBvEY6U6RdNSDXFQ0=" crossorigin="anonymous" referrerpolicy="no-referrer">
 {% endblock%}
 {% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js" integrity="sha256-/UzhKodZQoGvzunHOkD+eswoK8yedk+7OvoUgalqCR4=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js" integrity="sha256-RJn/k21P1WKtylpcvlEtwZ64CULu6GGNr7zrxPeXS9s=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js" integrity="sha256-itEcTLB5u6kxVnJycPUQKS7tzAcWxvIXJQdKWeyLm5Y=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" integrity="sha256-g3pvpbDHNrUrveKythkPMF2j/J7UFoHbUyFQcFe1yEY=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/@highlightjs/vue-plugin@2.1.0/dist/highlightjs-vue.min.js" integrity="sha256-GbaOiylookuXWmORzKdbqIprS3SqZKLtqXjeD/tHivg=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {% endblock %}
 {% block toolbar_title %} Investigate: {{ commit.sid }}{% endblock %}
@@ -213,12 +213,33 @@
             >
               <v-card
                 elevation="4"
-                class="overflow-y-auto"
-                style="height: 600px"
+                style="height: 680px"
               >
+                <v-tabs
+                  v-model="tab"
+                  bg-color="secondary"
+                  density="compact"
+                >
+                  <v-tab value="origMessage"><v-icon icon="mdi-message-text"></v-icon>Commit Message</v-tab>
+                  <v-tab value="translateMessage" @click="translate"><v-icon icon="mdi-translate"></v-icon>Translate</v-tab>
+                </v-tabs>
                 <v-card-text>
-                  <p v-pre>{{ commit.message }}
-                  </p>
+                  <v-tabs-window v-model="tab" style="height: 600px" class="overflow-y-auto">
+                    <v-tabs-window-item value="origMessage">
+                      <p v-pre>{{ commit.message }}
+                      </p>
+                    </v-tabs-window-item>
+                    <v-tabs-window-item value="translateMessage">
+                      <p style="white-space: pre-wrap;" v-text="translatedMessage"></p>
+                    </v-tabs-window-item>
+                  </v-tabs-window>
+                  <v-progress-linear
+                    :active="translateInProgress"
+                    :indeterminate="translateInProgress"
+                    color="primary"
+                    height="10"
+                    bottom
+                  ></v-progress-linear>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -229,7 +250,7 @@
                 v-model="investNote"
                 label="Note"
                 variant="outlined"
-                rows="24"
+                rows="27"
                 required
                 clearable
               >
@@ -342,17 +363,17 @@
 
 {% block navi_items %}
           {
-            text: "{{ project }}",
+            title: "{{ project }}",
             disabled: false,
             href: "{{ url_for('project', project = project) }}"
           },
           {
-            text: "{{ branch }}",
+            title: "{{ branch }}",
             disabled: false,
             href: "{{ url_for('branch', project = project, branch = branch) }}"
           },
           {
-            text: "{{ commit.sid }}",
+            title: "{{ commit.sid }}",
             disabled: true,
             href: "#"
           },
@@ -360,6 +381,8 @@
 
 {% block extra_data %}
       formValid: true,
+      tab: null,
+      translatedMessage: null,
       diffs: [
 {% for diff in commit.diffs %}`{{ diff }}`,
 {% endfor %}      ],
@@ -370,6 +393,7 @@
       investAnalysis: `{{ commit.analysis }}`,
       investKeywords: {{ commit.keywords }},
       kwd_items: {{ keywords }},
+      translateInProgress: false,
 {% endblock %}
 
 {% block vue_methods %}
@@ -393,10 +417,36 @@
           }
           catch (error) {
             this.btnColor = 'error';
+            console.log(error.response.data);
           }
           finally {
             this.btnLoading = false;
           }
         });
+      },
+      translate: async function() {
+        this.translateInProgress = true;
+        try {
+          if (this.translatedMessage)
+            return;
+
+          res = await axios.get(
+            "{{ url_for('webapi_v1.translate_commitlog', project = project, commitid = commit.id) }}",
+            null
+          )
+          jsonMessage = res.data.message;
+          this.translatedMessage = jsonMessage;
+        }
+        catch (error) {
+          if (error.response.data && error.response.data.cause) {
+            this.translatedMessage = error.response.data.cause;
+          } else {
+            this.translatedMessage = 'Unknown error occured. Please report this situation to the system administrator.';
+            console.log(error.response.data);
+          }
+        }
+        finally {
+          this.translateInProgress = false;
+        }
       }
 {% endblock %}

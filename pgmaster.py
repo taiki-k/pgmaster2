@@ -41,6 +41,7 @@ def create_app():
   global pg_conn
 
   app = Flask(__name__)
+  app.json.ensure_ascii = False
 
   # Read configuration file
   config_ini = configparser.ConfigParser()
