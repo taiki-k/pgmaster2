@@ -22,6 +22,9 @@
 {% block message %}Select a branch to investigate.{% endblock %}
 
 {% block list %}
+<a href="/p/{{ project }}/search">search by text</a>
+<hr/>
+<br/>
 {% for branch in branches %}
                       <v-list-item
                         href="{{ branch.url }}"

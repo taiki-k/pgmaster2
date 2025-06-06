@@ -180,6 +180,13 @@ def branch(project, branch):
   page = None
   num = None
 
+  print(f'project: {project}')
+  print(f'branch: {branch}')
+  searchword = request.args.get('searchword')
+  print(f'searchword: {searchword}')
+  if searchword == None:
+    searchword = ''
+
   try:
     (page, num) = validate_page_number(request.args)
   except ValueError as e:
@@ -208,45 +215,132 @@ def branch(project, branch):
 
     # Calcurate max number of page.
     with conn.cursor() as cursor:
-      cursor.execute(u"""SELECT
-        count(*)
-      FROM
-        _branch
-      WHERE
-        project = %s AND branch = %s
-      """,
-      [project, branch])
+      if searchword == '':
+        print(f'searchword is nothing')
+
+        cursor.execute(u"""SELECT
+          count(*)
+        FROM
+          _branch
+        WHERE
+          project = %s AND branch = %s
+        """,
+        [project, branch])
+      else:
+        if branch == '_all_':
+          cursor.execute(u"""SELECT
+            count(*)
+          FROM
+            _branch b LEFT JOIN _investigation i USING (project, branch, commitid)
+          WHERE
+            project = %s AND (i.note ILIKE %s OR i.snote ILIKE %s)
+          """,
+          [project, '%' + str(searchword) + '%', '%' + str(searchword) + '%'])
+        else:
+          cursor.execute(u"""SELECT
+            count(*)
+          FROM
+            _branch b LEFT JOIN _investigation i USING (project, branch, commitid)
+          WHERE
+            project = %s AND branch = %s AND (i.note ILIKE %s OR i.snote ILIKE %s)
+          """,
+          [project, branch, '%' + str(searchword) + '%', '%' + str(searchword) + '%'])
 
       rows = cursor.fetchall()
+      print(f'searchword: {searchword}, number of result: {len(rows)}')
+
       if len(rows) <= 0:
+        if searchword != '':
+          branches, firstbranch = prepare_search(project)
+          return render_template(
+            'search.html.jinja2',
+            project = project,
+            branches = branches,
+            firstbranch = firstbranch,
+            message = 'data not found')
         raise FileNotFoundError
 
       # This returns only 1 row with 1 column.
       rows_count = rows[0][0]
+      print(f'searchword: {searchword}, rows_count: {rows_count}')
       if rows_count <= 0:
+        if searchword != '':
+          branches, firstbranch = prepare_search(project)
+          return render_template(
+            'search.html.jinja2',
+            project = project,
+            branches = branches,
+            firstbranch = firstbranch,
+            message = 'data not found')
         raise FileNotFoundError
       max_page = rows_count // num + (0 if rows_count % num == 0 else 1)
 
     with conn.cursor() as cursor:
-      cursor.execute(u"""SELECT
-        b.commitid,
-        b.scommitid,
-        b.commitdate_l,
-        b.timezone_int,
-        i.updatetime
-      FROM
-        _branch b
-        LEFT JOIN _investigation i USING (project, branch, commitid)
-      WHERE
-        project = %s AND branch = %s
-      ORDER BY
-        commitdate DESC, scommitid
-      OFFSET %s
-      LIMIT %s""",
-      [project, branch, (page - 1) * num, num])
+      if searchword == '':
+        print(f'searchword is nothing')
+        cursor.execute(u"""SELECT
+          b.commitid,
+          b.scommitid,
+          b.commitdate_l,
+          b.timezone_int,
+          i.updatetime
+        FROM
+          _branch b
+          LEFT JOIN _investigation i USING (project, branch, commitid)
+        WHERE
+          project = %s AND branch = %s
+        ORDER BY
+          commitdate DESC, scommitid
+        OFFSET %s
+        LIMIT %s""",
+        [project, branch, (page - 1) * num, num])
+      else:
+        print(f'else searchword: {searchword}')
+        if branch =='_all_':
+          cursor.execute(u"""SELECT
+            b.commitid,
+            b.scommitid,
+            b.commitdate_l,
+            b.timezone_int,
+            i.updatetime
+          FROM
+            _branch b
+            LEFT JOIN _investigation i USING (project, branch, commitid)
+          WHERE
+            project = %s AND (i.note ILIKE %s OR i.snote ILIKE %s)
+          ORDER BY
+            commitdate DESC, scommitid
+          OFFSET %s
+          LIMIT %s""",
+          [project, '%' + str(searchword) + '%', '%' + str(searchword) + '%', (page - 1) * num, num])
+        else:
+          cursor.execute(u"""SELECT
+            b.commitid,
+            b.scommitid,
+            b.commitdate_l,
+            b.timezone_int,
+            i.updatetime
+          FROM
+            _branch b
+            LEFT JOIN _investigation i USING (project, branch, commitid)
+          WHERE
+            project = %s AND branch = %s AND (i.note ILIKE %s OR i.snote ILIKE %s)
+          ORDER BY
+            commitdate DESC, scommitid
+          OFFSET %s
+          LIMIT %s""",
+          [project, branch, '%' + str(searchword) + '%', '%' + str(searchword) + '%', (page - 1) * num, num])
 
       rows = cursor.fetchall()
       if len(rows) <= 0:
+        if searchword != '':
+          branches, firstbranch = prepare_search(project)
+          return render_template(
+            'search.html.jinja2',
+            project = project,
+            branches = branches,
+            firstbranch = firstbranch,
+            message = 'data not found')
         raise FileNotFoundError
       
       for c in rows:
@@ -800,8 +894,80 @@ def search_backpatch(project, branch, commitid):
     urls = urls
   )
 
+def prepare_search(project):
+  branches = []
+
+  conn = pg_conn.connect()
+  try:
+    with conn.cursor() as cursor:
+      cursor.execute(u"""SELECT
+        branch
+      FROM
+        repository_info
+      WHERE
+        project = %s
+      ORDER BY
+        branch;""",
+      [project]
+      )
+
+      rows = cursor.fetchall()
+      if len(rows) <= 0:
+        raise FileNotFoundError
+
+      for (b,) in rows:
+        b_info = {
+          'name' : b,
+          'url'  : url_for(
+            'branch',
+            project=project,
+            branch=b
+          )
+        }
+        branches.append(b_info)
+  except FileNotFoundError as e:
+    abort(404)
+  except Exception as e:
+    abort(500, traceback.format_exc())
+  finally:
+    pg_conn.close(conn)
+
+  firstbranch = ''
+  for x in branches:
+    print(x)
+    firstbranch = x['name']
+    break
+  return branches, firstbranch
+
+@app.post('/p/<project>/search')
+@app.get('/p/<project>/search')
+def search_by_text(project):
+  if request.method == 'GET':
+    branches, firstbranch = prepare_search(project)
+
+    return render_template(
+      'search.html.jinja2',
+      project = project,
+      branches = branches,
+      firstbranch = firstbranch,
+      message = '')
+
+  if request.method == 'POST':
+    req1 = request.form['searchdata1']
+    try:
+      branchname = request.form['branchname']
+    except Exception as e:
+      branchname = '_all_'
+    print(f'posted data1: {req1}')
+    print(f'posted data2: {branchname}')
+    return redirect(
+      url_for('branch', project = project, branch = branchname,
+              page = 1, num = 20, searchword = req1)
+    )
+
 if __name__ == "__main__":
   app.run(
     host = '0.0.0.0',
+    port = 5000,
     debug = True
   )
