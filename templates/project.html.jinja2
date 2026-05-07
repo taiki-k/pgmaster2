@@ -23,7 +23,12 @@
 
 {% block searchaction %}
 <v-form>
-  <v-btn @click="movetosearch">search by text</v-btn>
+  <v-btn
+    href="{{ url_for('search_by_text', project = project) }}"
+  >
+    <v-icon>mdi-magnify</v-icon>
+    search by text
+  </v-btn>
 </v-form>
 {% endblock %}
 
@@ -51,7 +56,4 @@
 {% endblock %}
 
 {% block vue_methods %}
-      movetosearch() {
-        location.href="{{ url_for('search_by_text', project = project) }}"
-      }
 {% endblock %}

@@ -38,7 +38,10 @@
 
         <div id="searchdata">
           <v-text-field name="searchdata1" v-model="search.word" label="search word" placeholder="enter search word"></v-text-field>
-          <v-btn type="submit">Search</v-btn>
+          <v-btn type="submit">
+            <v-icon>mdi-magnify</v-icon>
+            Search
+          </v-btn>
         </div>
         <v-col>
           <p style="color: red;">{{ message }}</p>
