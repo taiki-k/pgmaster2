@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2023 Kondo Taiki
+  Copyright (C) 2020-2025 Kondo Taiki and Contributors
 
   This file is part of "pgmaster2".
 
@@ -23,6 +23,7 @@
                 <v-col
                   cols="6"
                 >
+                  {% block searchaction %}{% endblock %}
                   <v-list
                     :lines="false"
                     border="sm"

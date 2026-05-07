@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2024 Kondo Taiki
+  Copyright (C) 2020-2025 Kondo Taiki and Contributors
 
   This file is part of "pgmaster2".
 
@@ -20,6 +20,17 @@
 {% block title %} {{ project }}{% endblock %}
 
 {% block message %}Select a branch to investigate.{% endblock %}
+
+{% block searchaction %}
+<v-form>
+  <v-btn
+    href="{{ url_for('search_by_text', project = project) }}"
+  >
+    <v-icon>mdi-magnify</v-icon>
+    search by text
+  </v-btn>
+</v-form>
+{% endblock %}
 
 {% block list %}
 {% for branch in branches %}
@@ -42,4 +53,7 @@
             disabled: true,
             href: "#"
           },
+{% endblock %}
+
+{% block vue_methods %}
 {% endblock %}
