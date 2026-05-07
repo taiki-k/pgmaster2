@@ -1,0 +1,77 @@
+{#
+  Copyright (C) 2020-2025 Kondo Taiki and Contributors
+
+  This file is part of "pgmaster2".
+
+  "pgmaster2" is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  "pgmaster2" is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with "pgmaster2".  If not, see <http://www.gnu.org/licenses/>.
+
+#}{% extends "base.html.jinja2" %}
+{% block title %}{{ project }} - Search{% endblock %}
+{% block toolbar_title %} search commits {% endblock %}
+{% block message %}Select a branch to search.{% endblock %}
+{% block selections %}
+      <v-form ref="form" action="{{ url_for('search_by_text', project = project) }}" method="POST">
+      <v-row>
+        <v-col cols="6">
+          <v-card elevation="2">
+            <div id="branchlist">
+              <v-container fluid>
+{% for branch in branches %}
+                <v-checkbox v-model="selected" name="branches" label="{{ branch.name }}" value="{{ branch.name }}"></v-checkbox>
+{% endfor %}
+              </v-container>
+            </div>
+          </v-card>
+        </v-col>
+        <v-col cols="6">
+
+        <div id="searchdata">
+          <v-text-field name="searchdata1" v-model="search.word" label="search word" placeholder="enter search word"></v-text-field>
+          <v-btn type="submit">
+            <v-icon>mdi-magnify</v-icon>
+            Search
+          </v-btn>
+        </div>
+        <v-col>
+          <p style="color: red;">{{ message }}</p>
+        </v-col>
+        </v-col>
+      </v-row>
+      </v-form>
+{% endblock %}
+
+{% block navi_items %}
+          {
+            title: "{{ project }}",
+            disabled: false,
+            href: "{{ url_for('project', project = project) }}"
+          },
+          {
+            title: "Search",
+            disabled: true,
+            href: "#"
+          },
+{% endblock %}
+
+{% block extra_data %}
+        search: {
+          branchname: '',
+          word: '{{ searchword }}',
+        },
+        selected: [
+{% for selectedbranch in selectedbranches %}
+          '{{ selectedbranch }}',
+{% endfor %}
+        ],
+{% endblock %}
