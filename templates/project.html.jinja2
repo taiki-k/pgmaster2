@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2024 Kondo Taiki
+  Copyright (C) 2020-2025 Kondo Taiki and Contributors
 
   This file is part of "pgmaster2".
 
@@ -21,10 +21,13 @@
 
 {% block message %}Select a branch to investigate.{% endblock %}
 
+{% block searchaction %}
+<v-form>
+  <v-btn @click="movetosearch">search by text</v-btn>
+</v-form>
+{% endblock %}
+
 {% block list %}
-<a href="/p/{{ project }}/search">search by text</a>
-<hr/>
-<br/>
 {% for branch in branches %}
                       <v-list-item
                         href="{{ branch.url }}"
@@ -45,4 +48,10 @@
             disabled: true,
             href: "#"
           },
+{% endblock %}
+
+{% block vue_methods %}
+      movetosearch() {
+        location.href="{{ url_for('search_by_text', project = project) }}"
+      }
 {% endblock %}

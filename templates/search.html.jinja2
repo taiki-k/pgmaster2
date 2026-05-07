@@ -1,5 +1,5 @@
 {#
-  Copyright (C) 2020-2024 Kondo Taiki
+  Copyright (C) 2020-2025 Kondo Taiki and Contributors
 
   This file is part of "pgmaster2".
 
@@ -21,17 +21,15 @@
 {% block toolbar_title %} search commits {% endblock %}
 {% block message %}Select a branch to search.{% endblock %}
 {% block selections %}
-      <form action="/p/{{ project }}/search" method="POST">
+      <v-form ref="form" action="{{ url_for('search_by_text', project = project) }}" method="POST">
       <v-row>
         <v-col cols="6">
           <v-card elevation="2">
             <div id="branchlist">
               <v-container fluid>
-                <v-radio-group v-model="search.branchname" name="branchname">
 {% for branch in branches %}
-                <v-radio label="{{ branch.name }}" value="{{ branch.name }}"></v-radio>
+                <v-checkbox v-model="selected" name="branches" label="{{ branch.name }}" value="{{ branch.name }}"></v-checkbox>
 {% endfor %}
-                </v-radio-group>
               </v-container>
             </div>
           </v-card>
@@ -47,7 +45,7 @@
         </v-col>
         </v-col>
       </v-row>
-      </form>
+      </v-form>
 {% endblock %}
 
 {% block navi_items %}
@@ -65,7 +63,12 @@
 
 {% block extra_data %}
         search: {
-          branchname: '{{ firstbranch }}',
-          word: '',
-        }
+          branchname: '',
+          word: '{{ searchword }}',
+        },
+        selected: [
+{% for selectedbranch in selectedbranches %}
+          '{{ selectedbranch }}',
+{% endfor %}
+        ],
 {% endblock %}
